@@ -31,15 +31,16 @@ class InterpolationTable:
             template = "{:^8} " * len(row)
             print(template.format(*row))
 
-    def select_rows(self,polynom_type:str):
-        self.Data.sort(key=lambda x: x[0])
+
+    def select_rows_hermit(self,x:float):
+        self.Data.sort(key=lambda data: data[0])
         selected_rows = []
 
         min_delta_row_index = 0
-        min_delta = abs(self.Data[0][0] - self.x)
+        min_delta = abs(self.Data[0][0] - x)
         for i in range(len(self.Data)):
-            if (abs(self.Data[i][0] - self.x) < min_delta):
-                min_delta = abs(self.Data[i][0] - self.x)
+            if (abs(self.Data[i][0] - x) < min_delta):
+                min_delta = abs(self.Data[i][0] - x)
                 min_delta_row_index = i
         l_bound = min_delta_row_index
         r_bound = min_delta_row_index + 1
@@ -47,25 +48,50 @@ class InterpolationTable:
             if (l_bound >= 0 and len(selected_rows) < self.n + 1):
 
                 selected_rows.append(self.Data[l_bound])
-                if (len(selected_rows) < self.n + 1 and polynom_type == "hermit"):
+                if (len(selected_rows) < self.n + 1):
                     selected_rows.append(self.Data[l_bound])
                 l_bound -= 1
             if (r_bound < len(self.Data) and len(selected_rows) < self.n + 1):
 
                 selected_rows.append(self.Data[r_bound])
-                if (len(selected_rows) < self.n + 1 and polynom_type == "hermit"):
+                if (len(selected_rows) < self.n + 1):
                     selected_rows.append(self.Data[r_bound])
+                r_bound += 1
+        selected_rows.sort(key=lambda x: x[0])
+        return selected_rows
+
+    def select_rows_neuton(self,x:float):
+        self.Data.sort(key=lambda data: data[0])
+        selected_rows = []
+
+        min_delta_row_index = 0
+        min_delta = abs(self.Data[0][0] - x)
+        for i in range(len(self.Data)):
+            if (abs(self.Data[i][0] - x) < min_delta):
+                min_delta = abs(self.Data[i][0] - x)
+                min_delta_row_index = i
+        l_bound = min_delta_row_index
+        r_bound = min_delta_row_index + 1
+        while (len(selected_rows) < self.n + 1):
+            if (l_bound >= 0 and len(selected_rows) < self.n + 1):
+
+                selected_rows.append(self.Data[l_bound])
+                l_bound -= 1
+            if (r_bound < len(self.Data) and len(selected_rows) < self.n + 1):
+
+                selected_rows.append(self.Data[r_bound])
                 r_bound += 1
         selected_rows.sort(key=lambda x: x[0])
         return selected_rows
 
     def neuton_interpolation(self,x = None):
         #print("Neuton:\n")
+        if (x == None):
+            x = self.x
 
-
-        chosen_dots = self.select_rows("neuton")
+        chosen_dots = self.select_rows_neuton(x)
         #print(chosen_dots)
-        part_sums = self.get_part_sums(chosen_dots, "neuton")
+        part_sums = self.get_part_sums_neuton(chosen_dots)
         #print(part_sums)
 
         # (part_sums[0], part_sums[1]) = (part_sums[1], part_sums[0])
@@ -109,7 +135,29 @@ class InterpolationTable:
         self.fit(database, n, cur_x)
 
 
-    def get_part_sums(self, chosen_dots:list, interpolation_func:str):
+    def get_part_sums_hermit(self, chosen_dots:list):
+        n = len(chosen_dots)
+        part_sums = [[0 for i in range(n + 1)] for i in range(n + 2)]  # n*n dim
+        for i in range(n):
+            part_sums[i][0] = chosen_dots[i][0]
+            part_sums[i][1] = chosen_dots[i][1]
+            part_sums[i][2] = chosen_dots[i][2]
+        row_iter = n - 1
+        col_count = 1
+        i = 0
+
+        for j in range(2, n + 1):
+            while (i < row_iter):
+                if  not(abs(part_sums[i][0] - part_sums[i + col_count][0]) < EPS and abs(part_sums[i][j - 1] - part_sums[i + 1][j - 1]) < EPS):
+                    part_sums[i][j] = (part_sums[i][j - 1] - part_sums[i + 1][j - 1]) / (
+                            part_sums[i][0] - part_sums[i + col_count][0])
+                i += 1
+            row_iter -= 1
+            i = 0
+            col_count += 1
+        return part_sums[0]
+
+    def get_part_sums_neuton(self, chosen_dots:list):
         n = len(chosen_dots)
         part_sums = [[0 for i in range(n + 1)] for i in range(n + 2)]  # n*n dim
         for i in range(n):
@@ -121,16 +169,14 @@ class InterpolationTable:
 
         for j in range(2, n + 1):
             while (i < row_iter):
-                if interpolation_func == "hermit" and abs(part_sums[i][0] - part_sums[i + col_count][0]) < EPS and abs(part_sums[i][j - 1] - part_sums[i + 1][j - 1]) < EPS:
-                    part_sums[i][j] = self.Data[i][2]
-                else:
                     part_sums[i][j] = (part_sums[i][j - 1] - part_sums[i + 1][j - 1]) / (
                             part_sums[i][0] - part_sums[i + col_count][0])
-                i += 1
+                    i += 1
             row_iter -= 1
             i = 0
             col_count += 1
         return part_sums[0]
+
 
     def read_from_file(self, filename:str):
         f = open(filename, "r")
@@ -151,11 +197,13 @@ class InterpolationTable:
         self.fit(database, n, cur_x)
         f.close()
 
-    def hermit_interpolation(self):
+    def hermit_interpolation(self,x = None):
        # print("Hermit:")
-        chosen_dots = self.select_rows("hermit")
+        if (x == None):
+            x = self.x
+        chosen_dots = self.select_rows_hermit(x)
        # print(chosen_dots)
-        part_sums = self.get_part_sums(chosen_dots, "hermit")
+        part_sums = self.get_part_sums_hermit(chosen_dots)
        # print(part_sums)
         # (part_sums[0], part_sums[1]) = (part_sums[1], part_sums[0])
         def interpolation_on_point(x: int):
@@ -237,14 +285,28 @@ class InterpolationTable:
 
 
 if __name__ == '__main__':
-    table_1 = InterpolationTable()
-    table_1.read_from_file("solve_eq_test_first_file")
+    '''table_1 = InterpolationTable()
+    table_1.read_from_file("task_solve_equations_first_file")
     table_2 = InterpolationTable()
-    table_2.read_from_file("solve_eq_test_sec_file")
+    table_2.read_from_file("task_solve_equations_sec_file")
 
     table_1.draw_graphs(None,None)
     table_2.draw_graphs(None,None )
-    print(table_1.solve_equations(table_2))
+    print(table_1.solve_equations(table_2))'''
+
+    table_1 = InterpolationTable()
+   #table_2 = InterpolationTable()
+    table_1.read_from_file("task_test")
+    for i in range(2,8):
+        table_1.n = i
+        func_hermit = table_1.hermit_interpolation()
+        func_neuton = table_1.neuton_interpolation()
+        print("hermit:",func_hermit(0.675))
+        print("neuton:",func_neuton(0.675))
+
+
+
+
 
     '''func = table.neuton_interpolation()
     func_h = table.hermit_interpolation()
