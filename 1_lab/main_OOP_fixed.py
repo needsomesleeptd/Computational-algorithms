@@ -251,14 +251,22 @@ def solve_equations_table(first_table,secound_table):
     first_table.rev_function()
     function_difference = []
     for i in range(len(first_table.Data)):
-            first_y = first_table.neuton_interpolation(secound_table.Data[i][0])
-            function_difference.append([secound_table.Data[i][0],secound_table.Data[i][1] - first_y(secound_table.Data[i][0])])
+            second_y = secound_table.neuton_interpolation(first_table.Data[i][0])
+            function_difference.append([first_table.Data[i][0],first_table.Data[i][1] - second_y(first_table.Data[i][0])])
+
+
+    i = 0
+    while i < len(function_difference) - 1:
+        if function_difference[i + 1][1] > function_difference[i][1]:
+            function_difference.pop(i)
+        else:
+            i += 1
 
     new_interpolation_table = InterpolationTable()
     new_interpolation_table.fit(function_difference,secound_table.n,secound_table.x)
 
     rev_interpolation_table_equation =  new_interpolation_table.reverse_interpolation_table()
-    #rev_interpolation = new_interpolation_table.reverse_interpolation("neuton")
+    #rev_interpolation = new_interpolation_table.reve rse_interpolation("neuton")
     first_table.rev_function()
     return rev_interpolation_table_equation
 
@@ -297,13 +305,13 @@ if __name__ == '__main__':
     for i in range(2,8):
         table_1.n = i
         rev_table_1.n = i
-        func_hermit = table_1.hermit_interpolation()
-        func_neuton = table_1.neuton_interpolation()
+        func_hermit = table_1.hermit_interpolation(0)
+        func_neuton = table_1.neuton_interpolation(0)
         rev_func_hermit = rev_table_1.hermit_interpolation()
         rev_func_neuton = rev_table_1.neuton_interpolation()
         print(("n == {}\n_______________________________________").format(i))
-        print("inter_front hermit:",func_hermit(0.676))
-        print("inter_front_neuton:",func_neuton(0.676))
+        print("inter_front hermit:",func_hermit(0.675))
+        print("inter_front_neuton:",func_neuton(0.675))
         print("inter_reversed hemit:",rev_func_hermit(0))
         print("inter_reversed hemit:", rev_func_neuton(0))
         print("________________________________________________")
@@ -320,7 +328,7 @@ if __name__ == '__main__':
     plt.plot(xs_2,ys_2)
     #plt.show()
     table_1.rev_function()
-    for i in range(1,6):
+    for i in range(1,8):
         table_2.n = i
         table_1.n = i
         equation_solve_table = solve_equations_table(table_1, table_2)
