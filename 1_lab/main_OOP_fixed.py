@@ -217,30 +217,18 @@ class InterpolationTable:
 
         return interpolation_on_point
 
-    def reverse_interpolation(self,interpolation_func:str):
+    def reverse_interpolation_table(self):
         n_data = len(self.Data)
-        data_reversed =copy.deepcopy(self.Data)
-        for i in range(n_data):
-            data_reversed[i][0],data_reversed[i][1] =  data_reversed[i][1],data_reversed[i][0]
-            if (len(self.Data[0]) > 2):
-                data_reversed[i][2] = 1/data_reversed[i][2]
-        rev_interpolation_func = None
-        save_data = self.Data
-        self.Data = data_reversed
-        x_rev_interpolation = 0
+        reversed_interpolation = InterpolationTable()
+        data_reversed = copy.deepcopy(self.Data)
+        reversed_interpolation.fit(data_reversed,self.n,self.x)
+        reversed_interpolation.rev_function()
+        x_rev_interpolation  = 0
         for i in range(1,n_data):
-            if (self.Data[i][0]*self.Data[i - 1][0] < 0):
-                x_rev_interpolation = (self.Data[i][0] + self.Data[i - 1][0]) / 2
-        x_save = self.x
-        self.x = x_rev_interpolation
-        if interpolation_func == "neuton":
-            rev_interpolation_func =  self.neuton_interpolation()
-        elif interpolation_func == "hermit":
-            rev_interpolation_func = self.hermit_interpolation()
-        self.x = x_save
-
-        self.Data = save_data
-        return rev_interpolation_func
+            if (reversed_interpolation.Data[i][0]*reversed_interpolation.Data[i - 1][0] < 0):
+                x_rev_interpolation = (reversed_interpolation.Data[i][0] + reversed_interpolation.Data[i - 1][0]) / 2
+        reversed_interpolation.x = x_rev_interpolation
+        return reversed_interpolation
     def rev_function(self):
         for i in range(len(self.Data)):
             self.Data[i][0],self.Data[i][1] = self.Data[i][1],self.Data[i][0]
@@ -248,23 +236,20 @@ class InterpolationTable:
                 self.Data[i][2] = 1 / self.Data[i][2]
 
 
-    def solve_equations(self,secound_table):
-        self.rev_function()
-        save_x = secound_table.x
-        secound_table_interpol_func = secound_table.neuton_interpolation()
-        function_difference = []
-        for i in range(len(self.Data)):
-                secound_table.x = self.Data[i][0]
-                secound_y = secound_table.neuton_interpolation()
-                function_difference.append([self.Data[i][0],self.Data[i][1] - secound_y(self.Data[i][0])])
+def solve_equations_table(first_table,secound_table):
+    first_table.rev_function()
+    function_difference = []
+    for i in range(len(first_table.Data)):
+            secound_y = secound_table.neuton_interpolation(first_table.Data[i][0])
+            function_difference.append([first_table.Data[i][0],first_table.Data[i][1] - secound_y(first_table.Data[i][0])])
 
-        new_interpolation_table = InterpolationTable()
-        new_interpolation_table.fit(function_difference,self.n,self.x)
+    new_interpolation_table = InterpolationTable()
+    new_interpolation_table.fit(function_difference,first_table.n,first_table.x)
 
-
-        rev_interpolation = new_interpolation_table.reverse_interpolation("neuton")
-        self.draw_graphs(rev_interpolation, "new_inter")
-        return rev_interpolation(0)
+    rev_interpolation_table_equation =  new_interpolation_table.reverse_interpolation_table()
+    #rev_interpolation = new_interpolation_table.reverse_interpolation("neuton")
+    first_table.rev_function()
+    return rev_interpolation_table_equation
 
 
 
@@ -297,12 +282,41 @@ if __name__ == '__main__':
     table_1 = InterpolationTable()
    #table_2 = InterpolationTable()
     table_1.read_from_file("task_test")
+    rev_table_1 = table_1.reverse_interpolation_table()
     for i in range(2,8):
         table_1.n = i
+        rev_table_1.n = i
         func_hermit = table_1.hermit_interpolation()
         func_neuton = table_1.neuton_interpolation()
-        print("hermit:",func_hermit(0.675))
-        print("neuton:",func_neuton(0.675))
+        rev_func_hermit = rev_table_1.hermit_interpolation()
+        rev_func_neuton = rev_table_1.neuton_interpolation()
+        print("inter_front hermit:",func_hermit(0.734))
+        print("inter_front_neuton:",func_neuton(0.734))
+        print("inter_reversed hemit:",rev_func_hermit(0))
+        print("inter_reversed hemit:", rev_func_neuton(0))
+
+    table_2 = InterpolationTable()
+    table_1.read_from_file("task_solve_equations_first_file")
+    table_2.read_from_file("task_solve_equations_sec_file")
+    table_1.rev_function()
+    xs_1  = [table_1.Data[i][0] for i in range(len(table_1.Data))]
+    ys_1 = [table_1.Data[i][1] for i in range(len(table_1.Data))]
+    xs_2 =  [table_2.Data[i][0] for i in range(len(table_1.Data))]
+    ys_2 =  [table_2.Data[i][1] for i in range(len(table_1.Data))]
+    plt.plot(xs_1,ys_1)
+    plt.plot(xs_2,ys_2)
+    #plt.show()
+    table_1.rev_function()
+    for i in range(2,8):
+        table_2.n = i
+        table_1.n = i
+        equation_solve_table = solve_equations_table(table_1, table_2)
+        equation_solve_table.n = i
+        equation_solve_func = equation_solve_table.neuton_interpolation(equation_solve_table.x)
+        eq_root_val = equation_solve_func(0)
+        print("roots of equations,",eq_root_val)
+
+    plt.show()
 
 
 
