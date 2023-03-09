@@ -316,6 +316,9 @@ if __name__ == '__main__':
         print("inter_reversed hemit:", rev_func_neuton(0))
         print("________________________________________________")
 
+    table_1.draw_graphs(func_hermit,"func_hermit")
+    table_1.draw_graphs(func_neuton, "func_neuton")
+
     table_2 = InterpolationTable()
     table_1.read_from_file("task_solve_equations_first_file")
     table_2.read_from_file("task_solve_equations_sec_file")
@@ -337,7 +340,9 @@ if __name__ == '__main__':
         eq_root_val = equation_solve_func(0)
         print(("roots of equations: {}, n == {}").format(eq_root_val,i))
 
+
     plt.show()
+
 
 
 
