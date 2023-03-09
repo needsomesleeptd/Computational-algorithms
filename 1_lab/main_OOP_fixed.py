@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import math
 import copy
+from  spline import *
 EPS = 1e-4
 
 class InterpolationTable:
@@ -246,6 +247,14 @@ class InterpolationTable:
             if (len(self.Data[0]) > 2):
                 self.Data[i][2] = 1 / self.Data[i][2]
 
+    def get_xy(self):
+        xs = []
+        ys = []
+        for i in range(len(self.Data)):
+            xs.append(self.Data[i][0])
+            ys.append(self.Data[i][1])
+        return xs, ys
+
 
 def solve_equations_table(first_table,secound_table):
     first_table.rev_function()
@@ -266,9 +275,11 @@ def solve_equations_table(first_table,secound_table):
     new_interpolation_table.fit(function_difference,secound_table.n,secound_table.x)
 
     rev_interpolation_table_equation =  new_interpolation_table.reverse_interpolation_table()
-    #rev_interpolation = new_interpolation_table.reve rse_interpolation("neuton")
     first_table.rev_function()
     return rev_interpolation_table_equation
+
+
+
 
 
 
@@ -340,23 +351,28 @@ if __name__ == '__main__':
     plt.show()
 
 
+temp_table = InterpolationTable()
+temp_table.read_from_file("test_spline.txt")
+spline_table = SplineTable(temp_table.Data)
+spline_table.draw_graphs("spline")
 
 
 
-    '''func = table.neuton_interpolation()
+
+'''func = table.neuton_interpolation()
+func_h = table.hermit_interpolation()
+func_rev_n = table.neuton_interpolation()
+func_rev_h = table.hermit_interpolation()
+for i in range(5):
+    table.n = i
+    func = table.neuton_interpolation()
     func_h = table.hermit_interpolation()
-    func_rev_n = table.neuton_interpolation()
-    func_rev_h = table.hermit_interpolation()
-    for i in range(5):
-        table.n = i
-        func = table.neuton_interpolation()
-        func_h = table.hermit_interpolation()
-        #table.print_table()
-        print("Neuton_res: ",func(table.x),"Hermit_res: ",func_h(table.x),"try: ",i)
-        func_rev_h = table.reverse_interpolation("hermit")
-        func_rev_n = table.reverse_interpolation("neuton")
-        print("Neuton_rev_res: ", func_rev_n(0), "Hermit_rev_res: ", func_rev_h(0), "try: ", i)
-    table.draw_graphs(func,"neuton")
-    table.draw_graphs(func_h,"hermit")
-    table.draw_graphs(func_rev_h, "neuton")
-    table.draw_graphs(func_rev_n, "hermit")'''
+    #table.print_table()
+    print("Neuton_res: ",func(table.x),"Hermit_res: ",func_h(table.x),"try: ",i)
+    func_rev_h = table.reverse_interpolation("hermit")
+    func_rev_n = table.reverse_interpolation("neuton")
+    print("Neuton_rev_res: ", func_rev_n(0), "Hermit_rev_res: ", func_rev_h(0), "try: ", i)
+table.draw_graphs(func,"neuton")
+table.draw_graphs(func_h,"hermit")
+table.draw_graphs(func_rev_h, "neuton")
+table.draw_graphs(func_rev_n, "hermit")'''
