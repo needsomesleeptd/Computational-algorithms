@@ -149,18 +149,3 @@ class SplineTable(InterpolationTable):
 
 
 
-
-if __name__ == '__main__':
-    table_1 = SplineTable()
-    table_1.read_from_file("test_first_file.txt")
-    spline_func = table_1.spline_interpolation(0,0)
-    target_x = -1
-    ans = spline_func(target_x)
-    print("ans_zeros:",ans)
-    table_1.draw_graphs(spline_func,"spline_func")
-    left_bound = table_1.inter_sec_derivarive(table_1.xs[0])
-    right_bound = table_1.inter_sec_derivarive(table_1.xs[-1])
-    spline_func_2 = table_1.spline_interpolation(left_bound,right_bound)
-    table_1.draw_graphs(spline_func_2, "spline_func_second_der")
-    print("ans_derivs",spline_func_2(target_x))
-    plt.show()

@@ -114,16 +114,34 @@ class InterpolationTable:
 
         return interpolation_on_point
 
-    def draw_graphs(self, interpolation_func,function_name:str):
+    def draw_graphs(self, interpolation_func,function_name:str,show = True):
         x = [self.Data[i][0] for i in range(len(self.Data))]
         y = [self.Data[i][1] for i in range(len(self.Data))]
-        plt.plot(x, y, label="real_function", marker='*')
+        if (show):
+            plt.plot(x, y, label="real_function", marker='*')
         xs_inter = np.linspace(x[0] - 0.5,x[-1] + 0.5,endpoint=True,num=150)
         if (interpolation_func != None):
             y_interpolated = list(map(interpolation_func, xs_inter))
             plt.plot(xs_inter, y_interpolated, label=function_name, marker='.')
         plt.legend()
-        plt.show()
+        plt.grid()
+        if (show):
+            plt.show()
+
+    def draw_graphs_neuton(self, interpolation_func, function_name: str,show = True):
+        x = [self.Data[i][0] for i in range(len(self.Data))]
+        y = [self.Data[i][1] for i in range(len(self.Data))]
+        if (show):
+            plt.plot(x, y, label="real_function", marker='*')
+        xs_inter = np.linspace(x[0] - 0.5, x[-1] + 0.5, endpoint=True, num=150)
+        if (interpolation_func != None):
+            y_funcs = list(map(interpolation_func, xs_inter))
+            y_interpolated = [y_funcs[i](xs_inter[i]) for i in range(len(y_funcs))]
+            plt.plot(xs_inter, y_interpolated, label=function_name, marker='.')
+        plt.legend()
+        plt.grid()
+        if (show):
+            plt.show()
 
     def scan_data(self):
         database = []
