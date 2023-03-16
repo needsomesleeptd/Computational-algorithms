@@ -118,7 +118,7 @@ class InterpolationTable:
         x = [self.Data[i][0] for i in range(len(self.Data))]
         y = [self.Data[i][1] for i in range(len(self.Data))]
         plt.plot(x, y, label="real_function", marker='*')
-        xs_inter = np.linspace(x[0],x[-1],endpoint=True,num=120)
+        xs_inter = np.linspace(x[0] - 0.5,x[-1] + 0.5,endpoint=True,num=150)
         if (interpolation_func != None):
             y_interpolated = list(map(interpolation_func, xs_inter))
             plt.plot(xs_inter, y_interpolated, label=function_name, marker='.')

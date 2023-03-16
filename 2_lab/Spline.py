@@ -45,7 +45,7 @@ class SplineTable(InterpolationTable):
     def get_Cs(self, start_c_init, end_c_init):
         dots_count = len(self.xs)
         epss = [0]
-        ettas = [start_c_init / 2]  # zeros to fix len
+        ettas = [start_c_init / 2]
         Cs = [0 for i in range(dots_count)]
         Cs[0] = start_c_init / 2
         Cs[-1] = end_c_init / 2
@@ -68,6 +68,8 @@ class SplineTable(InterpolationTable):
         return Cs
 
     def get_as(self):
+        a =  self.ys[:-1]
+        a.append(self.ys[-1])
         return self.ys[:-1]
 
     def get_ds(self, Cs: list):
@@ -92,21 +94,38 @@ class SplineTable(InterpolationTable):
 
     def get_coefs(self,start_coef,end_coef):
         a = self.get_as()
-        c = self.get_Cs(0,0)
+        c = self.get_Cs(start_coef,end_coef)
         b = self.get_bs(c)
         d = self.get_ds(c)
         return a,b,c,d
 
     def find_slice(self,x:float):
-        index = 0
-        while (self.xs[index] < x and index < len(self.xs)):
-            index += 1
-        if (index >= len(self.xs) - 1):
-            index = len(self.xs) - 2
-        return index
+        pos = 0
+        for i in range(1, len(self.xs)):
+            if self.xs[i] >= x:
+                break
+            else:
+                pos += 1
+
+        if pos >= len(self.xs) - 1:
+            pos -= 1
+        return pos
 
 
-
+    def inter_sec_derivarive(self,x):
+        self.n = 4
+        chosen_dots = self.select_rows_neuton(x)
+        part_sums = self.get_part_sums_neuton(chosen_dots)
+        #return 2 * (part_sums[3] + part_sums[4] * (3*x - chosen_dots[0][0] - chosen_dots[1][0] - chosen_dots[2][0]))  #got 2nd derivative
+        d = part_sums[4]
+        c = part_sums[3]
+        b = part_sums[2]
+        x_0 = chosen_dots[0][0]
+        x_1 = chosen_dots[1][0]
+        x_2 = chosen_dots[2][0]
+        return  2 * c + 6*d *x - (2 * d *x_1) - (2 * d *x_0) -(2 *d *x_2)
+        #return c + d * (4 * x - 2 * chosen_dots[2][0])
+        #return d * ((x - x_0) * (2 * x - x_2 - x_1) + (x - x_1) * (x - x_2)) + c * (2*x - x_1 - x_0) + b
 
 
 
@@ -122,7 +141,7 @@ class SplineTable(InterpolationTable):
             func_sum = 0
             index = self.find_slice(x)
             for i in range(4):  # 4 == coefs count
-                func_sum += coefs[i][index - 1] * ((x - self.xs[index - 1]) ** i)
+                func_sum += coefs[i][index] * ((x - self.xs[index]) ** i)
             return func_sum
         return spline_func
 
@@ -135,7 +154,13 @@ if __name__ == '__main__':
     table_1 = SplineTable()
     table_1.read_from_file("test_first_file.txt")
     spline_func = table_1.spline_interpolation(0,0)
-    target_x = 2.54
+    target_x = -1
     ans = spline_func(target_x)
-    print("ans:",ans)
+    print("ans_zeros:",ans)
     table_1.draw_graphs(spline_func,"spline_func")
+    left_bound = table_1.inter_sec_derivarive(table_1.xs[0])
+    right_bound = table_1.inter_sec_derivarive(table_1.xs[-1])
+    spline_func_2 = table_1.spline_interpolation(left_bound,right_bound)
+    table_1.draw_graphs(spline_func_2, "spline_func_second_der")
+    print("ans_derivs",spline_func_2(target_x))
+    plt.show()
