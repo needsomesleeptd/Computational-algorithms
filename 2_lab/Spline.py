@@ -127,15 +127,22 @@ class SplineTable(InterpolationTable):
         #return c + d * (4 * x - 2 * chosen_dots[2][0])
         #return d * ((x - x_0) * (2 * x - x_2 - x_1) + (x - x_1) * (x - x_2)) + c * (2*x - x_1 - x_0) + b
 
+    def print_coefs(self,start_coef,end_coef,label):
+        print(label)
+        a, b, c, d = self.get_coefs(start_coef, end_coef)
+        print("start_coef = {}, end_coef = {}".format(start_coef,end_coef))
+        coefs = [[ round(elem, 2) for elem in a ],  [round(elem, 2) for elem in b ],  [round(elem, 2) for elem in c ],  [round(elem, 2) for elem in d ]]
+        spaces_cnt = 3
+        print("a,b,c,d values:")
+        for coef in coefs:
+            template = "{:^8} " * len(coef)
+            print(template.format(*coef))
 
 
     def spline_interpolation(self,start_coef,end_coef):
         a,b,c,d = self.get_coefs(start_coef,end_coef)
         coefs = [a,b,c,d]
-        print(a)
-        print(b)
-        print(c)
-        print(d)
+
 
         def spline_func(x:float):
             func_sum = 0

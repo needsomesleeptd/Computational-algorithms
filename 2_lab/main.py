@@ -2,6 +2,9 @@ from Spline import *
 from beautifultable import BeautifulTable
 
 if __name__ == '__main__':
+    x = float(input())
+
+
     table_1 = SplineTable()
     table_1.read_from_file("test_first_file.txt")
     spline_func = table_1.spline_interpolation(0, 0)
@@ -26,8 +29,12 @@ if __name__ == '__main__':
     table_1.draw_graphs(spline_func_3, "left_bound_spline_func",show=False)
     table_1.draw_graphs(spline_func_4, "right_bound_spline_func",show=False)
     table_1.draw_graphs_neuton(table_1.neuton_interpolation, "neuton_interpolation",show=False)
-
     plt.show()
+
+    table_1.print_coefs(left_bound,right_bound,"both_bounds")
+    table_1.print_coefs(0, 0, "no_bounds")
+    table_1.print_coefs(left_bound, 0, "left_bound")
+    table_1.print_coefs(0, right_bound, "right_bound")
 
 
 
