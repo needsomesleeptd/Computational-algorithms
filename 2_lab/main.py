@@ -1,8 +1,8 @@
 from Spline import *
-from beautifultable import BeautifulTable
+
 
 if __name__ == '__main__':
-    x = float(input())
+
 
 
     table_1 = SplineTable()

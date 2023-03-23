@@ -78,8 +78,8 @@ class SplineTable(InterpolationTable):
             h1 = self.xs[i] - self.xs[i - 1]
             ds.append(d(Cs[i - 1], Cs[i], h1))
 
-        h1 = self.xs[-1] - self.xs[-2]
-        ds.append(d(0, Cs[-1], h1))
+        #h1 = self.xs[-1] - self.xs[-2]
+        #ds.append(d(0, Cs[-1], h1))
         return ds
 
     def get_bs(self, Cs: list):

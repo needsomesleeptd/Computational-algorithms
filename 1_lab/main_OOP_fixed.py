@@ -324,7 +324,7 @@ if __name__ == '__main__':
         print("inter_front hermit:",func_hermit(0.675))
         print("inter_front_neuton:",func_neuton(0.675))
         print("inter_reversed hemit:",rev_func_hermit(0))
-        print("inter_reversed hemit:", rev_func_neuton(0))
+        print("inter_reversed neuton:", rev_func_neuton(0))
         print("________________________________________________")
 
     table_2 = InterpolationTable()
