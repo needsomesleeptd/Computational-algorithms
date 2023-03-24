@@ -51,5 +51,7 @@ if __name__ == '__main__':
     multidim_table.fit(dataset,xs,ys,zs)
 
     print("Neuton interpolation result {0}".format(multidim_table.MultidimensionalInterpolationNeuton(nx,ny,nz,xp,yp,zp)))
+    #multidim_table.init_table(xs)
     print("Spline interpolation result {0}".format(multidim_table.MultidimensionalInterpolationSpline(nx, ny, nz, xp, yp, zp)))
+    multidim_table.init_table(xs)
     print("Combined interpolation result {0}".format(multidim_table.MultidimensionalInterpolationCombine(nx, ny, nz, xp, yp, zp)))
