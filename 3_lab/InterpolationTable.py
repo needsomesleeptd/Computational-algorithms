@@ -3,6 +3,7 @@ import math
 import copy
 EPS = 1e-4
 import numpy as np
+infinity  = None
 
 class InterpolationTable:
     def __init__(self):
@@ -63,13 +64,8 @@ class InterpolationTable:
         selected_rows.sort(key=lambda x: x[0])
         return selected_rows
 
-    def select_rows_neuton(self,x:float,Data = None, n = None):
-        if (Data == None):
-            Data = self.Data
-
-        if (n == None):
-            n = self.n
-            
+    def select_rows_neuton(self, x: float,Data,n):
+        
         if (len(Data) < n + 1):
             return None
         Data.sort(key=lambda data: data[0])
@@ -85,11 +81,9 @@ class InterpolationTable:
         r_bound = min_delta_row_index + 1
         while (len(selected_rows) < n + 1):
             if (l_bound >= 0 and len(selected_rows) < n + 1):
-
                 selected_rows.append(Data[l_bound])
                 l_bound -= 1
             if (r_bound < len(Data) and len(selected_rows) < n + 1):
-
                 selected_rows.append(Data[r_bound])
                 r_bound += 1
         selected_rows.sort(key=lambda x: x[0])
@@ -110,6 +104,7 @@ class InterpolationTable:
             print("Данных недостаточно для образования полинома данной степени")
             return None
         #print(chosen_dots)
+        print(chosen_dots)
         part_sums = self.get_part_sums_neuton(chosen_dots)
         #print(part_sums)
 
@@ -195,7 +190,7 @@ class InterpolationTable:
             col_count += 1
         return part_sums[0]
 
-    def get_part_sums_neuton(self, chosen_dots:list):
+    def get_part_sums_neuton(self, chosen_dots):
         n = len(chosen_dots)
         part_sums = [[0 for i in range(n + 1)] for i in range(n + 2)]  # n*n dim
         for i in range(n):
@@ -207,9 +202,11 @@ class InterpolationTable:
 
         for j in range(2, n + 1):
             while (i < row_iter):
-                    part_sums[i][j] = (part_sums[i][j - 1] - part_sums[i + 1][j - 1]) / (
-                            part_sums[i][0] - part_sums[i + col_count][0])
-                    i += 1
+                if (abs(part_sums[i][0] - part_sums[i + col_count][0]) >= EPS):
+                    part_sums[i][j] = (part_sums[i][j - 1] - part_sums[i + 1][j - 1]) / (part_sums[i][0] - part_sums[i + col_count][0])
+                else:
+                    part_sums[i][j] = 1
+                i += 1
             row_iter -= 1
             i = 0
             col_count += 1

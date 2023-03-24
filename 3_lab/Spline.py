@@ -140,8 +140,12 @@ class SplineTable(InterpolationTable):
 
 
     def spline_interpolation(self,Data = None,start_coef = 0,end_coef = 0):
+
+        save_xs,save_ys = self.xs,self.ys
         if (Data != None):
             self.Data = Data
+            self.xs,self.ys = self.get_xy()
+
         a,b,c,d = self.get_coefs(start_coef,end_coef)
         coefs = [a,b,c,d]
 

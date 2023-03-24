@@ -44,11 +44,12 @@ if __name__ == '__main__':
     ys = [i for i in range(5)]
     zs = [i for i in range(5)]
 
-    xp, yp, zp = map(int, input("Введите значения xp yp zp через пробел").split())
-    nx, ny, nz = map(int, input("Введите значения nx ny nz через пробел").split())
+    xp, yp, zp = map(float, input("Введите значения xp yp zp через пробел").split())
+    nx, ny, nz = map(float, input("Введите значения nx ny nz через пробел").split())
 
     multidim_table = MultiDim()
     multidim_table.fit(dataset,xs,ys,zs)
+
     print("Neuton interpolation result {0}".format(multidim_table.MultidimensionalInterpolationNeuton(nx,ny,nz,xp,yp,zp)))
-    print("Spline interpolation result {0}".format(multidim_table.MultidimensionalInterpolationNeuton(nx, ny, nz, xp, yp, zp)))
-    print("Combined interpolation result {0}".format(multidim_table.MultidimensionalInterpolationNeuton(nx, ny, nz, xp, yp, zp)))
+    print("Spline interpolation result {0}".format(multidim_table.MultidimensionalInterpolationSpline(nx, ny, nz, xp, yp, zp)))
+    print("Combined interpolation result {0}".format(multidim_table.MultidimensionalInterpolationCombine(nx, ny, nz, xp, yp, zp)))
