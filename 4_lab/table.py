@@ -56,12 +56,12 @@ class Table:
         self.table = np.array([])
         self.feature_count = 0
 
-    def generate_random_dots(self, dots_count, equal = False,l=-100, r=100,):
-        self.table = np.random.uniform(l, r, [dots_count, 2])
+    def generate_random_dots(self, dots_count,count=2, equal = False,l=-100, r=100):
+        self.table = np.random.uniform(l, r, [dots_count, count])
         if (equal):
             self.weights = np.ones(dots_count)
         else:
-            self.weights = np.random.uniform(-100, 100, len(self.table))
+            self.weights = np.random.uniform(0.1, 100, len(self.table))
         self.weights = np.sort(self.weights)
         # for i in range(len(self.table)):
         #     self.table[i][2] = self.table[i][2][0]
@@ -73,7 +73,7 @@ class Table:
         self.table = table
         self.feature_count = feature_count
         if (weights == None):
-            self.weights = np.random.uniform(-100, 100, len(table))
+            self.weights = np.random.uniform(0.1, 100, len(table))
     def read_weights(self):
         self.weights = np.array([])
         for i in range(len(self.table)):
@@ -111,7 +111,7 @@ class Table:
 
         return Slau
 
-    def get_function(self, n):  # n - степень полинома
+    def get_function_1d(self, n):  # n - степень полинома
         system = self.get_system(n)
         for i in range(len(system)):
             for j in range(len(system[0])):
@@ -142,12 +142,12 @@ class Table:
         self.weights = np.ones(len(self.table))
         self.weights.fill(value)
 
-    def dual_plot(self,n):
-        func = self.get_function(n)
+    def dual_plot(self,n,get_func):
+        func = get_func(n)
         save_weights = np.copy(self.weights)
         self.plot_graph(func,"custom weights")
         self.set_weights(1)
-        func = self.get_function(n)
+        func = get_func(n)
         self.plot_graph(func,"equal weights")
         self.weights = save_weights
         plt.xlabel("x")
@@ -156,5 +156,99 @@ class Table:
         plt.legend()
 
 
+    def elem_count_2d(self,n):
+        return ((n+1) * (n+2)) / 2 # Как в полиноме Ньютона
+
+    def get_value_2d(self,row,powx,powy):
+        return row[0] ** powx * row[1] ** powy
+
+    def get_system_2d(self,n = 1):
+        #n += 1
+        #rows_count = self.elem_count_2d(n)
+        #slau = np.ones([rows_count, rows_count + 1])
+        #slau = slau.astype("float64")
+
+        a = list()
+        b = list()
+
+        for i in range(n + 1):
+            for j in range(n + 1 - i):
+                a_row = []
+                for k in range(n + 1):
+                    for t in range(n + 1 - k):
+                        a_row.append(sum(list(map(
+                            lambda row: self.get_value_2d(row, k + i, t + j) * self.weights[i],
+                            self.table
+                        ))))
+                a.append(a_row)
+                b.append(sum(list(map(
+                    lambda row: self.get_value_2d(row, i, j) * row[2] * self.weights[i],
+                    self.table
+                ))))
+        slau = list()
+        for i in range(len(a)):
+            slau.append(a[i])
+            slau[i].append(b[i])
+        return slau
+
+    def get_function_2d(self, n=1):
+
+        slau = self.get_system_2d(n)
+        #print("\nМатрица СЛАУ:")
+        #printMatrix(slau)
+
+        c = solve_by_gauss(slau)
+        #printCoeff(c)
+
+        def approximateFunction_2D(x, y):
+            result = 0
+            c_index = 0
+            for i in range(n + 1):
+                for j in range(n + 1 - i):
+                    result += c[c_index] * self.get_value_2d(x, y, i, j)
+                    c_index += 1
+            return result
+
+        return approximateFunction_2D
+
+def drawGraficBy_AproxFunction_2D(self,approximateFuction, pointTable, n):
+    x = [dot[0] for dot in self.table]
+    y = [dot[1] for dot in self.table]
+    z = [dot[2] for dot in self.table]
+
+    x_min,x_max = min(x),max(x)
+    y_min, y_max = min(x), max(x)
+
+    #minX, maxX = getIntervalX(pointTable)
+    #minY, maxY = getIntervalY(pointTable)
+
+    xValues = np.linspace(x_min, x_max, 40)
+    yValues = np.linspace(y_min, y_max, 40)
+    zValues = [approximateFuction(xValues[i], yValues[i]) for i in range(len(xValues))]
+
+    def make_2D_matrix():
+        # Создаем двумерную матрицу-сетку
+        xGrid, yGrid = np.meshgrid(xValues, yValues)
+        # В узлах рассчитываем значение функции
+        zGrid = np.array([
+            [
+                approximateFuction(
+                    xGrid[i][j],
+                    yGrid[i][j],
+                ) for j in range(len(xValues))
+            ] for i in range(len(yValues))
+        ])
+        return xGrid, yGrid, zGrid
+
+    fig = plt.figure("График функции, полученный аппроксимации наименьших квадратов")
+    xpoints, ypoints, zpoints = x,y,z
+    axes = fig.add_subplot(projection='3d')
+    axes.scatter(xpoints, ypoints, zpoints, c='red')
+    axes.set_xlabel('OX')
+    axes.set_ylabel('OY')
+    axes.set_zlabel('OZ')
+    xValues, yValues, zValues = make_2D_matrix()
+    axes.plot_surface(xValues, yValues, zValues)
+    plt.show()
 
 
