@@ -60,6 +60,9 @@ class Table:
         self.table = np.random.uniform(l, r, [dots_count, 2])
         if (equal):
             self.weights = np.ones(dots_count)
+        else:
+            self.weights = np.random.uniform(-100, 100, len(self.table))
+        self.weights = np.sort(self.weights)
         # for i in range(len(self.table)):
         #     self.table[i][2] = self.table[i][2][0]
         # for j in range(len(self.table[0])):
@@ -70,9 +73,13 @@ class Table:
         self.table = table
         self.feature_count = feature_count
         if (weights == None):
-            self.weights = np.random.uniform(-100, 100, len(weights))
+            self.weights = np.random.uniform(-100, 100, len(table))
     def read_weights(self):
-        self.weights = list(map(float,input().split()))
+        self.weights = np.array([])
+        for i in range(len(self.table)):
+            value = float(input("Enter weight for dot: {0} {1}: ".format(self.table[i][0],self.table[i][1])))
+            self.weights = np.append(self.weights,value)
+
 
 
     def print(self):
@@ -120,7 +127,7 @@ class Table:
 
         return approximate_1D
 
-    def plot_graph(self, func, nums=100):
+    def plot_graph(self, func, label,nums=100):
         x = [dot[0] for dot in self.table]
         y = [dot[1] for dot in self.table]
         plt.scatter(x, y)
@@ -128,10 +135,7 @@ class Table:
         r = max(x)
         xs = np.linspace(l, r)
         ys = [func(x) for x in xs]
-        plt.xlabel("x")
-        plt.xlabel("y")
-        plt.grid()
-        plt.plot(xs, ys)
+        plt.plot(xs, ys,label=label)
 
 
     def set_weights(self,value):
@@ -141,12 +145,16 @@ class Table:
     def dual_plot(self,n):
         func = self.get_function(n)
         save_weights = np.copy(self.weights)
-        self.plot_graph(func)
+        self.plot_graph(func,"custom weights")
         self.set_weights(1)
         func = self.get_function(n)
-        self.plot_graph(func)
+        self.plot_graph(func,"equal weights")
         self.weights = save_weights
-        plt.plot()
+        plt.xlabel("x")
+        plt.xlabel("y")
+        plt.grid()
+        plt.legend()
+
 
 
 
