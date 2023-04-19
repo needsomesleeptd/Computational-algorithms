@@ -13,6 +13,8 @@ def dot(f, w, p, x, n):
     return su
 
 
+
+
 def make_identity(matrix):
     # перебор строк в обратном порядке
     for nrow in range(len(matrix) - 1, 0, -1):
@@ -28,7 +30,7 @@ def solve_by_gauss(matrix):
         # nrow равен номеру строки
         # np.argmax возвращает номер строки с максимальным элементом в уменьшенной матрице
         # которая начинается со строки nrow. Поэтому нужно прибавить nrow к результату
-        pivot = nrow + np.argmax(abs(matrix[nrow:, nrow]))
+        pivot = nrow + np.argmax(np.abs(matrix[nrow:,nrow]))
         if pivot != nrow:
             # swap
             # matrix[nrow], matrix[pivot] = matrix[pivot], matrix[nrow] - не работает.
@@ -49,6 +51,8 @@ def solve_by_gauss(matrix):
     make_identity(matrix)
     return matrix[:,-1]
 
+def get_value_2d(x,y,powx,powy):
+    return x ** powx * y ** powy
 
 class Table:
     def __init__(self) -> None:
@@ -197,6 +201,7 @@ class Table:
         #print("\nМатрица СЛАУ:")
         #printMatrix(slau)
 
+        slau = np.array([np.array(xi) for xi in slau]) #convert to np.array
         c = solve_by_gauss(slau)
         #printCoeff(c)
 
@@ -205,50 +210,50 @@ class Table:
             c_index = 0
             for i in range(n + 1):
                 for j in range(n + 1 - i):
-                    result += c[c_index] * self.get_value_2d(x, y, i, j)
+                    result += c[c_index] * get_value_2d(x, y, i, j)
                     c_index += 1
             return result
 
         return approximateFunction_2D
 
-def drawGraficBy_AproxFunction_2D(self,approximateFuction, pointTable, n):
-    x = [dot[0] for dot in self.table]
-    y = [dot[1] for dot in self.table]
-    z = [dot[2] for dot in self.table]
+    def drawGraficBy_AproxFunction_2D(self,approximateFuction,delta =30):
+        x = [dot[0] for dot in self.table]
+        y = [dot[1] for dot in self.table]
+        z = [dot[2] for dot in self.table]
 
-    x_min,x_max = min(x),max(x)
-    y_min, y_max = min(x), max(x)
+        x_min,x_max = min(x),max(x)
+        y_min, y_max = min(x), max(x)
 
-    #minX, maxX = getIntervalX(pointTable)
-    #minY, maxY = getIntervalY(pointTable)
+        #minX, maxX = getIntervalX(pointTable)
+        #minY, maxY = getIntervalY(pointTable)
 
-    xValues = np.linspace(x_min, x_max, 40)
-    yValues = np.linspace(y_min, y_max, 40)
-    zValues = [approximateFuction(xValues[i], yValues[i]) for i in range(len(xValues))]
+        xValues = np.linspace(x_min - delta, x_max + delta, 60)
+        yValues = np.linspace(y_min - delta, y_max + delta, 60)
+        zValues = [approximateFuction(xValues[i], yValues[i]) for i in range(len(xValues))]
 
-    def make_2D_matrix():
-        # Создаем двумерную матрицу-сетку
-        xGrid, yGrid = np.meshgrid(xValues, yValues)
-        # В узлах рассчитываем значение функции
-        zGrid = np.array([
-            [
-                approximateFuction(
-                    xGrid[i][j],
-                    yGrid[i][j],
-                ) for j in range(len(xValues))
-            ] for i in range(len(yValues))
-        ])
-        return xGrid, yGrid, zGrid
+        def make_2D_matrix():
+            # Создаем двумерную матрицу-сетку
+            xGrid, yGrid = np.meshgrid(xValues, yValues)
+            # В узлах рассчитываем значение функции
+            zGrid = np.array([
+                [
+                    approximateFuction(
+                        xGrid[i][j],
+                        yGrid[i][j],
+                    ) for j in range(len(xValues))
+                ] for i in range(len(yValues))
+            ])
+            return xGrid, yGrid, zGrid
 
-    fig = plt.figure("График функции, полученный аппроксимации наименьших квадратов")
-    xpoints, ypoints, zpoints = x,y,z
-    axes = fig.add_subplot(projection='3d')
-    axes.scatter(xpoints, ypoints, zpoints, c='red')
-    axes.set_xlabel('OX')
-    axes.set_ylabel('OY')
-    axes.set_zlabel('OZ')
-    xValues, yValues, zValues = make_2D_matrix()
-    axes.plot_surface(xValues, yValues, zValues)
-    plt.show()
+        fig = plt.figure("График функции, полученный аппроксимации наименьших квадратов")
+        xpoints, ypoints, zpoints = x,y,z
+        axes = fig.add_subplot(projection='3d')
+        axes.scatter(xpoints, ypoints, zpoints, c='red')
+        axes.set_xlabel('OX')
+        axes.set_ylabel('OY')
+        axes.set_zlabel('OZ')
+        xValues, yValues, zValues = make_2D_matrix()
+        axes.plot_surface(xValues, yValues, zValues)
+        plt.show()
 
 

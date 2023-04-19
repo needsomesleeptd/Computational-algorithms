@@ -2,8 +2,8 @@ from table import *
 
 
 table = Table()
-table.generate_random_dots(5,count=3)
-#table.print()
+table.generate_random_dots(5,equal=True,count=3)
+table.print()
 #table.read_weights()
 #func = table.get_function_1d(2)
 #table.print()
@@ -11,6 +11,7 @@ table.generate_random_dots(5,count=3)
 #plt.show()
 #table.generate_random_dots(5,count=3)
 #table.print()
-table.get_function_2d()
+approc_function = table.get_function_2d()
+table.drawGraficBy_AproxFunction_2D(approc_function)
 
 
