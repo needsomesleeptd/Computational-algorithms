@@ -1,5 +1,11 @@
 from table import solve_by_gauss
 import numpy as np
+from matplotlib import pyplot as plt
+
+def array_map(x, f):
+    return np.array(list(map(f, x)))
+
+
 
 
 def u_n(x, n, display=False):
@@ -65,3 +71,18 @@ def get_func(xs, n, params=[alpha, betta, tetta], display=False):
             return sum
 
         return func
+
+
+def plot_n_diff():
+    xs = np.linspace(0, 1)
+    xs_test = np.linspace(-10, 10)
+    print('n==2 : {0}'.format(get_func(xs, 2, display=True)))
+    print('n==3 : {0}'.format(get_func(xs, 3, display=True)))
+    func_2 = get_func(xs_test, 2)
+    func_3 = get_func(xs_test, 3)
+    vals_2 = array_map(xs_test, func_2)
+    vals_3 = array_map(xs_test, func_3)
+    plt.plot(xs_test, vals_3, label='n == 3')
+    plt.plot(xs_test, vals_2, label='n == 2')
+    plt.legend()
+    plt.show()

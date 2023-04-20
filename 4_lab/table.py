@@ -13,8 +13,6 @@ def dot(f, w, p, x, n):
     return su
 
 
-
-
 def make_identity(matrix):
     # перебор строк в обратном порядке
     for nrow in range(len(matrix) - 1, 0, -1):
@@ -40,7 +38,9 @@ def solve_by_gauss(matrix):
         divider = row[nrow]  # диагональный элемент
         if abs(divider) < 1e-14:
             # почти нуль на диагонали. Продолжать не имеет смысла, результат счёта неустойчив
-            raise ValueError(f"Матрица несовместна. Максимальный элемент в столбце {nrow}: {divider:.3g}")
+            #raise ValueError(f"Матрица несовместна. Максимальный элемент в столбце {nrow}: {divider:.3g}")
+
+            return np.array(matrix[:,-1])
         # делим на диагональный элемент.
         row /= divider
         # теперь надо вычесть приведённую строку из всех нижележащих строчек
@@ -52,8 +52,9 @@ def solve_by_gauss(matrix):
     return matrix[:, -1]
 
 
-def get_value_2d(x,y,powx,powy):
+def get_value_2d(x, y, powx, powy):
     return x ** powx * y ** powy
+
 
 class Table:
     def __init__(self) -> None:
@@ -61,7 +62,7 @@ class Table:
         self.table = np.array([])
         self.feature_count = 0
 
-    def generate_random_dots(self, dots_count,count=2, equal = False,l=-100, r=100):
+    def generate_random_dots(self, dots_count, count=2, equal=False, l=-100, r=100):
         self.table = np.random.uniform(l, r, [dots_count, count])
         if (equal):
             self.weights = np.ones(dots_count)
@@ -73,23 +74,38 @@ class Table:
         # for j in range(len(self.table[0])):
         #  self.table[i][j] = Point(*self.table[i][j])
 
+    def read_dots_params(self):
+        n = int(input("Введите количество точек:\n"))
+        self.table = []
+        self.weights = []
+        temp_dots = []
+        for i in range(n):
+            temp_dots = np.array([i for i in list(map(float,(input().split())))])
+            self.weights.append(temp_dots[-1])
+            self.table.append(temp_dots[:-1])
+
+
+
+
     def fit(self, table, feature_count, weights=None):
         self.weights = weights
         self.table = table
         self.feature_count = feature_count
         if (weights == None):
             self.weights = np.random.uniform(0.1, 100, len(table))
+
     def read_weights(self):
         self.weights = np.array([])
         for i in range(len(self.table)):
-            value = float(input("Enter weight for dot: {0} {1}: ".format(self.table[i][0],self.table[i][1])))
-            self.weights = np.append(self.weights,value)
-
-
+            value = float(input("Enter weight for dot: {0} {1}: ".format(self.table[i][0], self.table[i][1])))
+            self.weights = np.append(self.weights, value)
 
     def print(self):
         spaces_cnt = 3
         headers = ['x', 'y', 'p']
+        if (len(self.table) > 2):
+            headers = ['x', 'y', 'z', 'p']
+
         template = "{:^8} " * len(headers)
         print(template.format(*headers))
         i = 0
@@ -100,7 +116,7 @@ class Table:
             i += 1
 
     def get_system(self, n):
-        n+=1
+        n += 1
         Slau = np.zeros([n, n + 1])
         for i in range(n):
             for j in range(n):
@@ -132,7 +148,7 @@ class Table:
 
         return approximate_1D
 
-    def plot_graph(self, func, label,nums=100):
+    def plot_graph(self, func, label, nums=100):
         x = [dot[0] for dot in self.table]
         y = [dot[1] for dot in self.table]
         plt.scatter(x, y)
@@ -140,38 +156,36 @@ class Table:
         r = max(x)
         xs = np.linspace(l, r)
         ys = [func(x) for x in xs]
-        plt.plot(xs, ys,label=label)
+        plt.plot(xs, ys, label=label)
 
-
-    def set_weights(self,value):
+    def set_weights(self, value):
         self.weights = np.ones(len(self.table))
         self.weights.fill(value)
 
-    def dual_plot(self,n,get_func):
+    def dual_plot(self, n, get_func):
         func = get_func(n)
         save_weights = np.copy(self.weights)
-        self.plot_graph(func,"custom weights")
+        self.plot_graph(func, "custom weights")
         self.set_weights(1)
         func = get_func(n)
-        self.plot_graph(func,"equal weights")
+        self.plot_graph(func, "equal weights")
         self.weights = save_weights
         plt.xlabel("x")
         plt.xlabel("y")
         plt.grid()
         plt.legend()
 
+    def elem_count_2d(self, n):
+        return ((n + 1) * (n + 2)) / 2  # Как в полиноме Ньютона
 
-    def elem_count_2d(self,n):
-        return ((n+1) * (n+2)) / 2 # Как в полиноме Ньютона
-
-    def get_value_2d(self,row,powx,powy):
+    def get_value_2d(self, row, powx, powy):
         return row[0] ** powx * row[1] ** powy
 
-    def get_system_2d(self,n = 1):
-        #n += 1
-        #rows_count = self.elem_count_2d(n)
-        #slau = np.ones([rows_count, rows_count + 1])
-        #slau = slau.astype("float64")
+    def get_system_2d(self, n=1):
+        # n += 1
+        # rows_count = self.elem_count_2d(n)
+        # slau = np.ones([rows_count, rows_count + 1])
+        # slau = slau.astype("float64")
 
         a = list()
         b = list()
@@ -199,12 +213,13 @@ class Table:
     def get_function_2d(self, n=1):
 
         slau = self.get_system_2d(n)
-        #print("\nМатрица СЛАУ:")
-        #printMatrix(slau)
+        # print("\nМатрица СЛАУ:")
+        # printMatrix(slau)
 
-        slau = np.array([np.array(xi) for xi in slau]) #convert to np.array
+        slau = np.array([np.array(xi) for xi in slau])  # convert to np.array
         c = solve_by_gauss(slau)
-        #printCoeff(c)
+
+        # printCoeff(c)
 
         def approximateFunction_2D(x, y):
             result = 0
@@ -217,16 +232,16 @@ class Table:
 
         return approximateFunction_2D
 
-    def drawGraficBy_AproxFunction_2D(self,approximateFuction,delta =30):
+    def drawGraficBy_AproxFunction_2D(self, approximateFuction, delta=30):
         x = [dot[0] for dot in self.table]
         y = [dot[1] for dot in self.table]
         z = [dot[2] for dot in self.table]
 
-        x_min,x_max = min(x),max(x)
+        x_min, x_max = min(x), max(x)
         y_min, y_max = min(x), max(x)
 
-        #minX, maxX = getIntervalX(pointTable)
-        #minY, maxY = getIntervalY(pointTable)
+        # minX, maxX = getIntervalX(pointTable)
+        # minY, maxY = getIntervalY(pointTable)
 
         xValues = np.linspace(x_min - delta, x_max + delta, 60)
         yValues = np.linspace(y_min - delta, y_max + delta, 60)
@@ -247,7 +262,7 @@ class Table:
             return xGrid, yGrid, zGrid
 
         fig = plt.figure("График функции, полученный аппроксимации наименьших квадратов")
-        xpoints, ypoints, zpoints = x,y,z
+        xpoints, ypoints, zpoints = x, y, z
         axes = fig.add_subplot(projection='3d')
         axes.scatter(xpoints, ypoints, zpoints, c='red')
         axes.set_xlabel('OX')
@@ -256,5 +271,3 @@ class Table:
         xValues, yValues, zValues = make_2D_matrix()
         axes.plot_surface(xValues, yValues, zValues)
         plt.show()
-
-
