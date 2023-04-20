@@ -38,7 +38,7 @@ def solve_by_gauss(matrix):
             matrix[[nrow, pivot]] = matrix[[pivot, nrow]]
         row = matrix[nrow]
         divider = row[nrow]  # диагональный элемент
-        if abs(divider) < 1e-10:
+        if abs(divider) < 1e-14:
             # почти нуль на диагонали. Продолжать не имеет смысла, результат счёта неустойчив
             raise ValueError(f"Матрица несовместна. Максимальный элемент в столбце {nrow}: {divider:.3g}")
         # делим на диагональный элемент.

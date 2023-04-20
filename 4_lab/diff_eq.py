@@ -11,21 +11,21 @@ def u_n(x, n, display=False):
 def alpha(xs):
     sum = 0
     for x in xs:
-        sum += 2 + 2 * x - 3 * x * x
+        sum += -3 * x ** 2 + 2 * x - 2
     return sum
 
 
 def betta(xs):
     sum = 0
     for x in xs:
-        sum += -4 * x ** 3 + 3 * x ** 2 - 6 * x - 2
+        sum += 3 * x ** 2 - 4 * x ** 3 + 2 - 6 * x
     return sum
 
 
 def tetta(xs):
     sum = 0
     for x in xs:
-        sum += 6 * x - 5 * x ** 4 - 8 * x ** 3
+        sum += 6 * x ** 2 - 5 * x ** 4 - 8 * x ** 3
     return sum
 
 
@@ -39,7 +39,7 @@ def create_matrix(xs, n, params=[alpha, betta, tetta]):  # n - кол-во па�
                 matrix[i][j] = params[i](xs) ** 2
             else:
                 matrix[i][j] = params[i](xs) * params[j](xs)
-    #print(matrix)
+    # print(matrix)
     return np.array(matrix)
 
 
