@@ -30,15 +30,16 @@ def tetta(xs):
 
 
 def create_matrix(xs, n, params=[alpha, betta, tetta]):  # n - кол-во параметров матрицы params == alpha,betta etc...
-    matrix = [[i for i in range(n + 1)] for j in range(n)]
+    matrix = [[0 for i in range(n + 1)] for j in range(n)]
     for i in range(n):
         for j in range(n + 1):
-            if (j == n):
-                matrix[i][j] = (4 * sum(xs) - 1) * params[i](xs)
-            elif (i == j):
-                matrix[i][j] = params[i](xs) ** 2
-            else:
-                matrix[i][j] = params[i](xs) * params[j](xs)
+            for x in (xs):
+                if (j == n):
+                    matrix[i][j] += (4 * x - 1) * params[i]([x])
+                elif (i == j):
+                    matrix[i][j] += params[i]([x]) ** 2
+                else:
+                    matrix[i][j] += params[i]([x]) * params[j]([x])
     # print(matrix)
     return np.array(matrix)
 
