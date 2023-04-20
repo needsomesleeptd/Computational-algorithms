@@ -18,14 +18,14 @@ def alpha(xs):
 def betta(xs):
     sum = 0
     for x in xs:
-        sum += 3 * x ** 2 - 4 * x ** 3 + 2 - 6 * x
+        sum += 3 * x ** 2 - 4 * x ** 3 - 6 * x + 2
     return sum
 
 
 def tetta(xs):
     sum = 0
     for x in xs:
-        sum += 6 * x ** 2 - 5 * x ** 4 - 8 * x ** 3
+        sum += 6 * x - 12 * x ** 2 + 4 * x ** 4 - 5 * x ** 5
     return sum
 
 
