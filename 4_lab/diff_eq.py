@@ -8,40 +8,47 @@ def u_n(x, n, display=False):
     return (1 - x) * (x ** n)
 
 
-def alpha_2(xs):
+def alpha(xs):
     sum = 0
     for x in xs:
-        sum += -2 + 2 * x - 3 * x * x
+        sum += 2 + 2 * x - 3 * x * x
     return sum
 
 
-def betta_2(xs):
+def betta(xs):
     sum = 0
     for x in xs:
-        sum += -1 + 3 * x ** 2 - 4 * x ** 3
+        sum += -4 * x ** 3 + 3 * x ** 2 - 6 * x - 2
     return sum
 
 
-def create_matrix_2(xs, n, params=[alpha_2, betta_2]):  # n - кол-во параметров матрицы params == alpha,betta etc...
+def tetta(xs):
+    sum = 0
+    for x in xs:
+        sum += 6 * x - 5 * x ** 4 - 8 * x ** 3
+    return sum
+
+
+def create_matrix(xs, n, params=[alpha, betta, tetta]):  # n - кол-во параметров матрицы params == alpha,betta etc...
     matrix = [[i for i in range(n + 1)] for j in range(n)]
     for i in range(n):
         for j in range(n + 1):
             if (j == n):
-                matrix[i][j] = (2 * sum(xs) - 1) * params[i](xs)
+                matrix[i][j] = (4 * sum(xs) - 1) * params[i](xs)
             elif (i == j):
                 matrix[i][j] = params[i](xs) ** 2
             else:
-                matrix[i][j] = betta_2(xs) * alpha_2(xs)
-    print(matrix)
+                matrix[i][j] = params[i](xs) * params[j](xs)
+    #print(matrix)
     return np.array(matrix)
 
 
-def get_func_2(xs, n, params=[alpha_2, betta_2], display=False):
-    matrix = create_matrix_2(xs, n, params)
+def get_func(xs, n, params=[alpha, betta, tetta], display=False):
+    matrix = create_matrix(xs, n, params)
     Cs = solve_by_gauss(matrix)
 
     if (display):
-        res_str = str(-xs[0] + u_n(xs[0], 0))
+        res_str = '1 - x'  # str(-xs[0] + u_n(xs[0], 0))
         for i in range(n):
             if (Cs[i] >= 0):
                 res_str += '+'
