@@ -98,63 +98,67 @@ def bisection(f, a, b, EPS=0.001):
 
     return c
 
-    def eps(C: float, B: float, A: float, prev_eps: float):
-        return C / (B - A * prev_eps)
+def eps(C: float, B: float, A: float, prev_eps: float):
+    return C / (B - A * prev_eps)
 
-    def etta(A: float, prev_etta: float, F: float, B: float, eps):
-        return (A * prev_etta + F) / (B - A * eps)
-
-
-
-    def get_A(x):
-        return 1
-
-    def get_C(x):
-        return 1
-
-    def get_B(x,h):
-        return get_A(x) + get_C(x) + (h ** 2) * (3 * x ** 2)
-
-    def get_Y(x): # Исходная функция соответствующая начальным условиям
-        return 1 + x * 2
-    def get_right_Function(x,y): #Правая часть изначального уравнения
-        return x **2 + y **3
-
-    def get_F(xs,y,index,h):
-        return get_Y(xs[index - 1]) - 2 * get_Y(xs[index]) + get_Y(xs[index + 1]) - (h**2) * get_right_Function(xs[index],y)
-
-
-    def get_y_delta(a, b, n=10000): # need to pass y here
-        h = (b - a) / n
-        ys = [1 for i in range(n + 1)]
-        xs = [0 for i in range(n + 1)]
-        matrix = np.zeros((n + 1, n + 1), dtype=np.float64)
-        epss = [0]
-        ettas = [0]
-        for i in range(1,n + 1):
-            cur_eps = eps(get_C(xs[i]), get_B(xs[i],h), get_A(xs[i]), epss[i - 1])
-            cur_etta = etta(get_A(xs[i]), ettas[i - 1], get_F(xs[i],y,i,h), get_B(xs[i],h), epss[i - 1])
-            epss.append(cur_eps)
-            ettas.append(cur_etta)
-        for i in range(n - 1, 0, -1):
-            ys[i] = epss[i] * ys[i + 1] + ettas[i]
-        return ys
-
-    def solve_diff_eq(x,a,b,EPS = 1e-4,n=10000):
-        ys = [1 for i in range(n + 1)] # calculated one from get_Y
-        ys_delta = [1 for i in range(n + 1)]
-        while (any(ys_delta > EPS)):
-            ys_delta = get_y_delta(a,b,n)
-            ys += ys_delta
+def etta(A: float, prev_etta: float, F: float, B: float, eps):
+    return (A * prev_etta + F) / (B - A * eps)
 
 
 
+def get_A(x):
+    return 1
+
+def get_C(x):
+    return 1
+
+def get_B(x,h):
+    return get_A(x) + get_C(x) + (h ** 2) * (3 * x ** 2)
+
+def get_Y(x): # Исходная функция соответствующая начальным условиям
+    return 1 + x * 2
+def get_right_Function(x,y): #Правая часть изначального уравнения
+    return x **2 + y **3
+
+def get_F(xs,ys,index,h):
+    return ys[index - 1] - 2 * ys[index] + ys[index + 1] - (h**2) * get_right_Function(xs[index],ys[index])
+
+
+def get_y_delta(old_ys,a, b, n=10000): # need to pass y here
+    ys = old_ys.copy()
+    h = (b - a) / n
+    ys = [1 for i in range(n + 1)]
+    xs = [0 for i in range(n + 1)]
+    matrix = np.zeros((n + 1, n + 1), dtype=np.float64)
+    epss = [0]
+    ettas = [0]
+    for i in range(1,n):
+        cur_eps = eps(get_C(xs[i]), get_B(xs[i],h), get_A(xs[i]), epss[i - 1])
+        cur_etta = etta(get_A(xs[i]), ettas[i - 1], get_F(xs,ys,i,h), get_B(xs[i],h), epss[i - 1])
+        epss.append(cur_eps)
+        ettas.append(cur_etta)
+    for i in range(n - 1, 0, -1):
+        ys[i] = epss[i] * ys[i + 1] + ettas[i]
+    return ys
+
+def solve_diff_eq(a,b,EPS = 1e-4,n=10000):
+    ys = np.array([1 for i in range(n + 1)],dtype=np.float64) # calculated one from get_Y
+    ys_delta = np.array([1 for i in range(n + 1)],dtype=np.float64)
+    while (any(ys_delta) > EPS):
+        ys_delta = get_y_delta(ys,a,b,n)
+        ys += ys_delta
+        print(f'ys vals : {ys_delta}')
+    return ys
 
 
 
 
 
-    def get_Cs(self, start_c_init, end_c_init):
+
+
+
+
+    '''def get_Cs(self, start_c_init, end_c_init):
         dots_count = len(self.xs)
         epss = [0]
         ettas = [start_c_init / 2]
@@ -177,7 +181,7 @@ def bisection(f, a, b, EPS=0.001):
 
         for i in range(dots_count - 2, 0, -1):
             Cs[i] = epss[i] * Cs[i + 1] + ettas[i]
-        return Cs
+        return Cs'''
 
 
 if __name__ == '__main__':
@@ -201,3 +205,7 @@ if __name__ == '__main__':
     print(f'Значение Лапласа в данной точке: {laplas_function(ans)}')
 
     # Task 03
+    a = 0
+    b = 1
+
+    solve_diff_eq(a,b)
