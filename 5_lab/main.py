@@ -59,28 +59,30 @@ def integration_by_trapezoid(a, b, f, n=10000):
         h = (b - a) / float(n)
     else:
         h = (a - b) / float(n)
-
+    #h = (b - a) / float(n)
     interg_sum = 0
-    for i in range(0, n):
-        interg_sum += 0.5 * h * (f(a + i * h) + f(a + (i + 1) * h))
-    interg_sum /= 2
+    interg_sum +=  0.5 *h * f(a)
+    interg_sum+= 0.5 * h * f(b)
+    for i in range(1, n):
+        interg_sum += f(a + i * h)
+    #interg_sum /= 2
     if (b < a):
         interg_sum *= -1
-    return interg_sum
+    return interg_sum  * h
 
 
 def laplas_function(x):
-    laplas = 2 / sqrt(2 * pi) * integration_by_trapezoid(0, x, lambda x: exp(-(x ** 2) / 2))
+    laplas =   integration_by_trapezoid(0, x, lambda z: exp(-(z ** 2) / 2)) / sqrt(2 * pi) # Добавить 2 если нужно
     return laplas
 
 
 def bisection(f, a, b, eps=0.001):
-   # if (f(a) * f(b) > 0):
-   #     print("Неверно выбраны правая и левая части\n")
-   #     return
+    if (f(a) * f(b) > 0):
+        print("Неверно выбраны правая и левая части\n")
+        return
 
     c = a
-    while ((b - a) >= eps):
+    while (abs(b - a) >= eps):
 
         # Find middle point
         c = (a + b) / 2
@@ -101,18 +103,14 @@ def bisection(f, a, b, eps=0.001):
 if __name__ == '__main__':
     variables = np.full((3), 1, dtype=np.float64)
     new_variables = np.full((3), 1, dtype=np.float64)
-    x = 1
-    y = 1
-    z = 1
-    c = 100
-    count = 0
+
     EPS = 1e-4
 
     while (np.any(np.abs(new_variables) > EPS)):
         matrix_s_1 = get_YakibianMatrix(variables)
         new_variables = solve_by_gauss(matrix_s_1)
         variables += new_variables
-        count += 1
+
     print(f'variables = {variables}')
     print(get_YakibianMatrix(variables))
 
@@ -120,9 +118,9 @@ if __name__ == '__main__':
 
     val = float(input('Введите значение функции лапласа для получения значения x:\n'))
     #ans = laplas_function(val)
-    ans = bisection(lambda x: laplas_function(x) - val, 0, MAX_VAL)
-    print(f'Значение x  для функции Лапласа: {ans}\n')
-
+    ans = bisection(lambda x: laplas_function(x) - val, -MAX_VAL ,MAX_VAL)
+    print(f'Значение x  для функции Лапласа: {ans}')
+    print(f'Значение Лапласа в данной точке: {laplas_function(ans)}')
     #Task 03
 
 
