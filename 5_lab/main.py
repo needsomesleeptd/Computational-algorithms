@@ -2,6 +2,7 @@ import sympy as sym
 import numpy as np
 from scipy.linalg import solve
 from math import *
+import matplotlib.pyplot as plt
 
 MAX_VAL = 10000
 
@@ -83,14 +84,14 @@ def bisection(f, a, b, EPS=0.001):
     c = a
     while (abs(b - a) >= EPS):
 
-        # Find middle point
+
         c = (a + b) / 2
 
-        # Check if middle point is root
+
         if (f(c) == 0.0):
             break
 
-        # Decide the side to repeat the steps
+
         if (f(c) * f(a) < 0):
             b = c
         else:
@@ -121,34 +122,39 @@ def get_right_Function(x,y): #Правая часть изначального �
     return x **2 + y **3
 
 def get_F(xs,ys,index,h):
-    return ys[index - 1] - 2 * ys[index] + ys[index + 1] - (h**2) * get_right_Function(xs[index],ys[index])
+    return ys[index - 1] - 2 * ys[index] + ys[index + 1] - (h**2) *  (xs[index] **2 + ys[index] **3)
+
+    #F = [0 if i < 1 else y[i - 1] - 2 * y[i] + y[i + 1] - h ** 2 * (x[i] ** 2 + y[i] ** 3) for i in range(n - 1)]  # было n
 
 
 def get_y_delta(old_ys,a, b, n=10000): # need to pass y here
     ys = old_ys.copy()
     h = (b - a) / n
-    ys = [1 for i in range(n + 1)]
-    xs = [0 for i in range(n + 1)]
-    matrix = np.zeros((n + 1, n + 1), dtype=np.float64)
-    epss = [0]
-    ettas = [0]
-    for i in range(1,n):
+    xs = np.linspace(a,b,num=n)
+    #matrix = np.zeros((n + 1, n + 1), dtype=np.float64)
+    epss = [0,0]
+    ettas = [0,0]
+    for i in range(1,n - 1):
         cur_eps = eps(get_C(xs[i]), get_B(xs[i],h), get_A(xs[i]), epss[i - 1])
         cur_etta = etta(get_A(xs[i]), ettas[i - 1], get_F(xs,ys,i,h), get_B(xs[i],h), epss[i - 1])
         epss.append(cur_eps)
         ettas.append(cur_etta)
-    for i in range(n - 1, 0, -1):
-        ys[i] = epss[i] * ys[i + 1] + ettas[i]
-    return ys
+    new_ys = [0 for i in range(n)]
+    new_ys[n - 1] = ettas[-1]
+    for i in range(n - 2, 1, -1):
+        new_ys[i] = epss[i + 1] * new_ys[i + 1] + ettas[i + 1]
+    return new_ys
 
-def solve_diff_eq(a,b,EPS = 1e-4,n=10000):
-    ys = np.array([1 for i in range(n + 1)],dtype=np.float64) # calculated one from get_Y
-    ys_delta = np.array([1 for i in range(n + 1)],dtype=np.float64)
-    while (any(ys_delta) > EPS):
+def solve_diff_eq(a,b,EPS = 1e-4,n=10):
+    xs = np.linspace(a,b,num=n)
+    ys = get_Y(xs) # calculated one from get_Y
+    ys_delta = np.array([1 for i in range(n)],dtype=np.float64)
+    while (np.max(ys_delta) > EPS):
         ys_delta = get_y_delta(ys,a,b,n)
         ys += ys_delta
-        print(f'ys vals : {ys_delta}')
-    return ys
+        print(f'ys vals : {ys}')
+        print(f'new_ys vals : {ys_delta}')
+    return xs,ys
 
 
 
@@ -208,4 +214,7 @@ if __name__ == '__main__':
     a = 0
     b = 1
 
-    solve_diff_eq(a,b)
+    xs,ys = solve_diff_eq(a,b)
+
+    plt.plot(xs,ys)
+    plt.show()
