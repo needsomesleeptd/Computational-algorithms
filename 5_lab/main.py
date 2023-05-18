@@ -84,13 +84,10 @@ def bisection(f, a, b, EPS=0.001):
     c = a
     while (abs(b - a) >= EPS):
 
-
         c = (a + b) / 2
-
 
         if (f(c) == 0.0):
             break
-
 
         if (f(c) * f(a) < 0):
             b = c
@@ -99,70 +96,80 @@ def bisection(f, a, b, EPS=0.001):
 
     return c
 
+
 def eps(C: float, B: float, A: float, prev_eps: float):
     return C / (B - A * prev_eps)
+
 
 def etta(A: float, prev_etta: float, F: float, B: float, eps):
     return (A * prev_etta + F) / (B - A * eps)
 
 
-
 def get_A(x):
     return 1
+
 
 def get_C(x):
     return 1
 
-def get_B(x,h):
+
+def get_B(x, h):
     return get_A(x) + get_C(x) + (h ** 2) * (3 * x ** 2)
 
-def get_Y(x): # Исходная функция соответствующая начальным условиям
+
+def get_Y(x):  # Исходная функция соответствующая начальным условиям
     return 1 + x * 2
-def get_right_Function(x,y): #Правая часть изначального уравнения
-    return x **2 + y **3
-
-def get_F(xs,ys,index,h):
-    return ys[index - 1] - 2 * ys[index] + ys[index + 1] - (h**2) *  (xs[index] **2 + ys[index] **3)
-
-    #F = [0 if i < 1 else y[i - 1] - 2 * y[i] + y[i + 1] - h ** 2 * (x[i] ** 2 + y[i] ** 3) for i in range(n - 1)]  # было n
 
 
-def get_y_delta(old_ys,a, b, n=10000): # need to pass y here
+def get_right_Function(x, y):  # Правая часть изначального уравнения
+    return x ** 2 + y ** 3
+
+
+def get_F(xs, ys, index, h):
+    return ys[index - 1] - 2 * ys[index] + ys[index + 1] - (h ** 2) * (xs[index] ** 2 + ys[index] ** 3)
+
+    # F = [0 if i < 1 else y[i - 1] - 2 * y[i] + y[i + 1] - h ** 2 * (x[i] ** 2 + y[i] ** 3) for i in range(n - 1)]  # было n
+
+
+def get_y_delta(old_ys, a, b, n=10000):  # need to pass y here
     ys = old_ys.copy()
-    h = (b - a) / n
-    xs = np.linspace(a,b,num=n)
-    #matrix = np.zeros((n + 1, n + 1), dtype=np.float64)
-    epss = [0,0]
-    ettas = [0,0]
-    for i in range(1,n - 1):
-        cur_eps = eps(get_C(xs[i]), get_B(xs[i],h), get_A(xs[i]), epss[i - 1])
-        cur_etta = etta(get_A(xs[i]), ettas[i - 1], get_F(xs,ys,i,h), get_B(xs[i],h), epss[i - 1])
-        epss.append(cur_eps)
-        ettas.append(cur_etta)
-    new_ys = [0 for i in range(n)]
-    new_ys[n - 1] = ettas[-1]
-    for i in range(n - 2, 1, -1):
-        new_ys[i] = epss[i + 1] * new_ys[i + 1] + ettas[i + 1]
-    return new_ys
+    h = (b -a ) / n
+    xs = np.linspace(a, b, num=n)
+    # расстояния между x - передаём
+    # h = [0 if i < 1 else x[i] - x[i - 1] for i in range(n)]
 
-def solve_diff_eq(a,b,EPS = 1e-4,n=10):
-    xs = np.linspace(a,b,num=n)
-    ys = get_Y(xs) # calculated one from get_Y
-    ys_delta = np.array([1 for i in range(n)],dtype=np.float64)
+    A = [1] * (n + 1)  # [0 if i < 2 else 1 for i in range(n)]
+    D = [1] * (n + 1)  # 0 if i < 2 else h[i] for i in range(n)
+    B = [A[i] + D[i] + h ** 2 * 3 * ys[i] ** 2 for i in
+         range(n)]  # 0 if i < 2 else -2 * (h[i - 1] + h[i]) for i in range(n)
+    F = [0 if i < 1 else ys[i - 1] - 2 * ys[i] + ys[i + 1] - h ** 2 * (xs[i] ** 2 + ys[i] ** 3) for i in
+         range(n - 1)]  # было n
+
+    xi = [None, None, 0]
+    eta = [None, None, 0]
+    C = [0] * (n + 2)
+
+    # прогоночные коэффициенты
+    for i in range(2, n - 1):  # for xi[i + 1] #было n
+        xi.append(D[i] / (B[i] - A[i] * xi[i]))
+        eta.append((F[i] + A[i] * eta[i]) / (B[i] - A[i] * xi[i]))
+
+    C[n] = eta[-1]
+    for i in range(n - 2, 1, -1):  # было n - 1
+        C[i] = xi[i + 1] * C[i + 1] + eta[i + 1]
+    return C
+
+
+def solve_diff_eq(a, b, EPS=1e-5, n=100):
+    xs = np.linspace(a, b, num=n)
+    ys = get_Y(xs)  # calculated one from get_Y
+    ys_delta = np.array([1 for i in range(n)], dtype=np.float64)
     while (np.max(ys_delta) > EPS):
-        ys_delta = get_y_delta(ys,a,b,n)
-        ys += ys_delta
+        ys_delta = get_y_delta(ys, a, b, n)
+        ys += ys_delta[:len(ys)]
         print(f'ys vals : {ys}')
         print(f'new_ys vals : {ys_delta}')
-    return xs,ys
-
-
-
-
-
-
-
-
+    return xs, ys
 
     '''def get_Cs(self, start_c_init, end_c_init):
         dots_count = len(self.xs)
@@ -214,7 +221,8 @@ if __name__ == '__main__':
     a = 0
     b = 1
 
-    xs,ys = solve_diff_eq(a,b)
+    xs, ys = solve_diff_eq(a, b)
 
-    plt.plot(xs,ys)
+    plt.plot(xs, ys)
+    plt.grid()
     plt.show()
