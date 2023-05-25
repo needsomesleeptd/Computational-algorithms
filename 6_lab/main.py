@@ -1,8 +1,8 @@
-import sympy as sym
 import numpy as np
-from scipy.linalg import solve
-from math import *
 import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
+from MultiDimensional import *
+from InterpolationTable import *
 
 
 def make_identity(matrix):
@@ -52,8 +52,8 @@ def get_polynom_func(n):
         elif (n == 1):
             return x
 
-        for i in range(2,n + 1):
-            new_polynom = 1 / (i) * ((2 * i - 1) * x * f - (i-1) * s)
+        for i in range(2, n + 1):
+            new_polynom = 1 / (i) * ((2 * i - 1) * x * f - (i - 1) * s)
             # print(f'new_polynom = {new_polynom}')
             s = f
             f = new_polynom
@@ -128,7 +128,7 @@ def build_matrix(roots, n):  # Ai всего N
         row = np.array([], dtype=np.float64)
         for j in range(n):
             row = np.append(row, roots[j] ** i)
-        if ( i % 2  == 0):
+        if (i % 2 == 0):
             row = np.append(row, 2 / (i + 1))
         else:
             row = np.append(row, 0)
@@ -153,25 +153,120 @@ def intergral_by_Gauss(f, a, b, n):
     return (b - a) / 2 * su
 
 
+def integral_by_Simpson(vals, a, b, n):
+    h = (b - a) / n
+    res = 0
+    for i in range((len(vals) - 1) // 2):
+        res += vals[2 * i] + vals[2 * i + 1] + vals[2 * i + 2]
+
+    return (h / 3) * res
+
+
+'''def get_multiple_integral(Table,a,b,n,n_gauss,n_simpson):
+    intergrals_x = []
+    h = (b - a) / n
+    x = Table[:, 0]
+    size = np.shape(Table)[1]
+    for i in range(2,size):
+        get_'''
+
+
+class Plane():
+    def __init__(self, Table_df):
+        self.table = Table_df
+
+    def get_plane_equation_params(self):
+        P = [self.table[0][1], self.table[1][0], self.table[1][1]]
+        Q = [self.table[0][2], self.table[2][0], self.table[2][2]]
+        R = [self.table[0][3], self.table[4][0], self.table[3][4]]
+
+        x1, y1, z1 = P
+        x2, y2, z2 = Q
+        x3, y3, z3 = R
+        a1 = x2 - x1
+        b1 = y2 - y1
+        c1 = z2 - z1
+        a2 = x3 - x1
+        b2 = y3 - y1
+        c2 = z3 - z1
+        a = b1 * c2 - b2 * c1
+        b = a2 * c1 - a1 * c2
+        c = a1 * b2 - b1 * a2
+        d = (- a * x1 - b * y1 - c * z1)
+        return a, b, c, d
+
+    def get_plane_value(self, x, y):
+        a, b, c, d = self.get_plane_equation_params()
+        return -(d + a * x + b * y) / c
+
+
+def get_integral(f, ax, bx, ay, by, n, n_gauss, n_simpson):
+    hx = (bx - ax) / n
+
+    integrals = []
+    xs = []
+    pointTable = []
+    int_table = InterpolationTable()
+    dataset = []
+    for i in range(n):
+        cur_x = ax + hx * i
+        integral = intergral_by_Gauss(lambda y: f(cur_x, y), ax, bx, n_gauss)
+        integrals.append(integral)
+        xs.append(cur_x)
+        dataset.append([cur_x,integral])
+
+    #int_table.fit(dataset, n - 1, xs)
+    #f_y = int_table.neuton_interpolation(n - 1)
+    #su = integral_by_Simpson(f_y, ay, by, n_simpson)
+
+
+    return integral_by_Simpson(integrals,ay,by,n_simpson)
+
+
 if __name__ == '__main__':
+    Table = np.genfromtxt("task_func.txt", delimiter="\t")
+    # Table[0] = Table[0][~np.isnan(Table)]
+    # Table_df= np.log(Table_df.loc[:, Table_df.columns != "y\\x"])
+    # print(Table,Table.shape)
+    Table[1:, 1:] = np.log(Table[1:, 1:])
 
+    # print(Table)
 
-
-
-
+    # multidim_table = MultiDim()
+    # multidim_table.fit(Table[1:,1:],Table[1,:],Table[:,1],Table[1:,1:])
+    # print(multidim_table.MultidimensionalInterpolationNeuton(2,2,0.1,0.1))
+    # print(plane.get_plane_value(Table[0][1],Table[1][0]))
+    # print(plane.get_plane_value(Table[0][3], Table[2][0]),Table[3,2])
+    # findMultidimensionalInterpolation()
+    xx, yy = np.meshgrid(Table[1:, :], Table[:, 1:])
+    print(xx, yy)
+    z = Table[1:, 1:]
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+    X, Y = np.meshgrid(Table[1:, 0], Table[0, 1:])
+    ax.plot_surface(X, Y, Table[1:, 1:])
+    plt.show()
+    plane = Plane(Table)
+    multidim = MultiDim()
+    multidim.fit(Table[1:,1:],Table[1:,0], Table[0, 1:],None)
+    x_val = multidim.MultidimensionalInterpolationNeuton(3,3,2,1)
+    f = lambda x,y: multidim.MultidimensionalInterpolationNeuton(3,3,x,y)
+    print(get_integral(f,0,1,0,1,10,10,10))
+    #print(np.exp(get_integral(plane.get_plane_value, ax=0,bx=2,ay=0,by=2,n=10,n_simpson=10,n_gauss=10)))
+    # print(np.exp(plane.get_plane_value(0.5,0.1)))
     # Some tests to find that everything is working
-    #func = lambda x: x ** 2 + x ** 3 / 4 + cos(x) + sin(x)
+    # func = lambda x: x ** 2 + x ** 3 / 4 + cos(x) + sin(x)
 
     # ans  = intergral_by_Gauss(func,-1,1,3)
     # x = 3
     # ans = get_polynom_value(x,2)
     # ans2 = 1/2 * (5 *x **3 - 3 *x)
     # ans2 =1 /2 * (3*x*x - 1)
-    #print(intergral_by_Gauss(func, -1, 0, 300))
-    #func_0 = get_polynom_func(0)
-    #func_1 = get_polynom_func(1)
-    #func_2 = get_polynom_func(2)
-    #func_3 = get_polynom_func(3)
-    #print(func_0(200),func_1(200),func_2(200),func_3(200))
+    # print(intergral_by_Gauss(func, -1, 0, 300))
+    # func_0 = get_polynom_func(0)
+    # func_1 = get_polynom_func(1)
+    # func_2 = get_polynom_func(2)
+    # func_3 = get_polynom_func(3)
+    # print(func_0(200),func_1(200),func_2(200),func_3(200))
 
     # print(ans,'',ans2)
