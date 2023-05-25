@@ -153,14 +153,19 @@ def intergral_by_Gauss(f, a, b, n):
     return (b - a) / 2 * su
 
 
-def integral_by_Simpson(vals, a, b, n):
+def integral_by_Simpson(f, a, b, n):
     h = (b - a) / n
-    res = 0
-    for i in range((len(vals) - 1) // 2):
-        res += vals[2 * i] + vals[2 * i + 1] + vals[2 * i + 2]
+    k = 0.0
+    x = a + h
+    for i in range(1, n // 2 + 1):
+        k += 4 * f(x)
+        x += 2 * h
 
-    return (h / 3) * res
-
+    x = a + 2 * h
+    for i in range(1, n // 2):
+        k += 2 * f(x)
+        x += 2 * h
+    return (h / 3) * (f(a) + f(b) + k)
 
 '''def get_multiple_integral(Table,a,b,n,n_gauss,n_simpson):
     intergrals_x = []
@@ -205,14 +210,18 @@ def get_integral(f, ax, bx, ay, by, n, n_gauss, n_simpson):
 
     integrals = []
     xs = []
-
-    dataset = []
+    inter_table_data = []
     for i in range(n):
         cur_x = ax + hx * i
         integral = intergral_by_Gauss(lambda y: f(cur_x, y), ax, bx, n_gauss)
         integrals.append(integral)
+        xs.append(cur_x)
+        inter_table_data.append([cur_x,integral])
 
-    return integral_by_Simpson(integrals,ay,by,n_simpson)
+    inter_table = InterpolationTable()
+    inter_table.fit(inter_table_data,n - 1,2)
+    new_func = inter_table.neuton_interpolation((by + ay) / 2)
+    return integral_by_Simpson(new_func,ay,by,n_simpson)
 
 
 if __name__ == '__main__':
@@ -238,13 +247,15 @@ if __name__ == '__main__':
     X, Y = np.meshgrid(Table[1:, 0], Table[0, 1:])
     ax.plot_surface(X, Y, Table[1:, 1:])
     plt.show()'''
+
     plane = Plane(Table)
     multidim = MultiDim()
     multidim.fit(Table[1:,1:],Table[1:,0], Table[0, 1:],None)
     #x_val = multidim.MultidimensionalInterpolationNeuton(10,10,2,1)
-    f = lambda x,y: multidim.MultidimensionalInterpolationNeuton(12,12,x,y)
-    #f = lambda x,y: plane.get_plane_value(x,y)
-    print(np.exp(get_integral(f,0,1,0,1,15,15,15)))
+    #f = lambda x,y: multidim.MultidimensionalInterpolationNeuton(10,10,x,y)
+    f = lambda x,y: plane.get_plane_value(x,y)
+    #f = lambda x,y: x*x +y*y
+    print(np.exp(get_integral(f,0,1,0,1,10,10,10)))
 
     #x = [i for i in range(100)]
     #y = [i for i in range(100)]

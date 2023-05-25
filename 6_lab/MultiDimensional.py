@@ -68,30 +68,23 @@ class MultiDim(SplineTable):
         func_u_y_val = self.neuton_interpolation(yp, Data=y_vals, n=ny)
         return  func_u_y_val
 
-    def MultidimensionalInterpolationSpline(self, nx, ny, nz, xp, yp, zp):
-
-       # self.init_table([0, 1, 2, 3, 4])
-        z_vals = []
-        for z_index in range(len(self.zs)):  # z
-            y_vals = []
-            for y_index in range(len(self.ys)):  # y
-                x_vals = []
-                for x_index in range(len(self.xs)):  # x
-                    x_vals.append([self.xs[x_index], self.DataSet[z_index][y_index][x_index]])
-                func_u_x = self.spline_interpolation(x_vals)
-                val_x =  func_u_x(xp)
-                self.init_table([0, 1, 2, 3, 4])
-                y_vals.append([self.ys[y_index], val_x])
+    def MultidimensionalInterpolationSpline(self, nx, ny, xp, yp):
 
 
-            func_u_y = self.spline_interpolation(y_vals)
-            val_y = func_u_y(yp)
-            self.init_table([0, 1, 2, 3, 4])
-            z_vals.append([self.zs[z_index], val_y])
+        y_vals = []
+        for y_index in range(len(self.ys)):  # y
+            x_vals = []
+            for x_index in range(len(self.xs)):  # x
+                x_vals.append([self.xs[x_index], self.DataSet[y_index][x_index]])
+            func_u_x = self.spline_interpolation(x_vals)
+            val_x =  func_u_x(xp)
+            self.init_table([i for i in range(len(self.xs))])
+            y_vals.append([self.ys[y_index], val_x])
 
 
-        func_u_z = self.spline_interpolation(z_vals)
-        return func_u_z(zp)
+        func_u_y = self.spline_interpolation(y_vals)
+        val_y = func_u_y(yp)
+        return val_y
 
     def MultidimensionalInterpolationCombine(self, nx, ny, nz, xp, yp, zp):
         #self.init_table([0, 1, 2, 3, 4])
