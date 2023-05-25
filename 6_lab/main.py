@@ -42,23 +42,31 @@ def solve_by_gauss(matrix):
     make_identity(matrix)
     return matrix[:, -1]
 
-def get_polynom_value(x,n = 3):
-    f = x
-    s = 1
-    for i in range(1,n):
-        new_polynom = 1 / (i + 1) * ((2 * i + 1) *x *f - (i)  * s)
-        #print(f'new_polynom = {new_polynom}')
-        s = f
-        f = new_polynom
-    return f
+
+def get_polynom_func(n):
+    def polynom_func(x):
+        f = x
+        s = 1
+        if (n == 0):
+            return 1
+        elif (n == 1):
+            return x
+
+        for i in range(2,n + 1):
+            new_polynom = 1 / (i) * ((2 * i - 1) * x * f - (i-1) * s)
+            # print(f'new_polynom = {new_polynom}')
+            s = f
+            f = new_polynom
+
+        return f
+
+    return polynom_func
+
+
 class Lishandr_Polynom:
     def __init__(self, n, polinoms):
         self.n = n
         self.func = None
-
-
-
-
 
 
 def range_of_Polinoms(n):
@@ -81,12 +89,12 @@ def get_next_Lishandr_Polinom(polinoms, index):
 
 def bisection(f, a, b, EPS=0.01, EPS_EXTRA=0.1):
     if (f(a) * f(b) > 0):
-        #print("Неверно выбраны правая и левая части\n")
+        # print("Неверно выбраны правая и левая части\n")
         return None
 
     c = a
 
-    while (abs(b - a) >= EPS * c + EPS_EXTRA):
+    while (abs(b - a) > EPS * abs(c) + EPS):
 
         c = (a + b) / 2
         if (f(c) == 0.0):
@@ -99,17 +107,15 @@ def bisection(f, a, b, EPS=0.01, EPS_EXTRA=0.1):
     return c
 
 
-def find_roots(a, b, polinom,n = 10):  # index == Кол-во корней
+def find_roots(a, b, polinom, n):  # index == Кол-во корней
     split_count = n
     roots = []
     while (len(roots) != n):
         roots = []
         splitters = np.linspace(a, b, num=split_count + 1)
         for i in range(len(splitters) - 1):
-            root = bisection(polinom,splitters[i], splitters[i + 1])
-            if (root == None):
-                break
-            else:
+            root = bisection(polinom, splitters[i], splitters[i + 1])
+            if (root != None):
                 roots.append(root)
 
         split_count = split_count * 2
@@ -122,20 +128,23 @@ def build_matrix(roots, n):  # Ai всего N
         row = np.array([], dtype=np.float64)
         for j in range(n):
             row = np.append(row, roots[j] ** i)
-        row = np.append(row, 2 / (i + 1))
-        if (len(matrix ) == 0):
+        if ( i % 2  == 0):
+            row = np.append(row, 2 / (i + 1))
+        else:
+            row = np.append(row, 0)
+        if (len(matrix) == 0):
             matrix = row
         else:
             matrix = np.vstack((matrix, row))
-    #matrix.reshape()
+    # matrix.reshape()
     return matrix
 
 
 def intergral_by_Gauss(f, a, b, n):
-    #polynoms = range_of_Polinoms(n)
-
-    roots = find_roots(-1, 1, get_polynom_value,n=n)
-    matrix = build_matrix(roots,n)
+    # polynoms = range_of_Polinoms(n)
+    polynom_func = get_polynom_func(n)
+    roots = find_roots(-1, 1, polynom_func, n=n)  # Заметим что все корни многочленов Лежандра лежат от -1 до 1
+    matrix = build_matrix(roots, n)
     As = solve_by_gauss(matrix)
     su = 0
     for i in range(n):
@@ -144,21 +153,25 @@ def intergral_by_Gauss(f, a, b, n):
     return (b - a) / 2 * su
 
 
-
-
 if __name__ == '__main__':
-    func = lambda x : x ** 2
-
-    #ans  = intergral_by_Gauss(func,-1,1,3)
-    #x = 3
-    #ans = get_polynom_value(x,2)
-    #ans2 = 1/2 * (5 *x **3 - 3 *x)
-    #ans2 =1 /2 * (3*x*x - 1)
-    print(intergral_by_Gauss(func,-10,10,3))
-
-    #print(ans,'',ans2)
 
 
 
 
 
+    # Some tests to find that everything is working
+    #func = lambda x: x ** 2 + x ** 3 / 4 + cos(x) + sin(x)
+
+    # ans  = intergral_by_Gauss(func,-1,1,3)
+    # x = 3
+    # ans = get_polynom_value(x,2)
+    # ans2 = 1/2 * (5 *x **3 - 3 *x)
+    # ans2 =1 /2 * (3*x*x - 1)
+    #print(intergral_by_Gauss(func, -1, 0, 300))
+    #func_0 = get_polynom_func(0)
+    #func_1 = get_polynom_func(1)
+    #func_2 = get_polynom_func(2)
+    #func_3 = get_polynom_func(3)
+    #print(func_0(200),func_1(200),func_2(200),func_3(200))
+
+    # print(ans,'',ans2)
