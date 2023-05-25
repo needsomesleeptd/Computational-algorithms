@@ -205,20 +205,12 @@ def get_integral(f, ax, bx, ay, by, n, n_gauss, n_simpson):
 
     integrals = []
     xs = []
-    pointTable = []
-    int_table = InterpolationTable()
+
     dataset = []
     for i in range(n):
         cur_x = ax + hx * i
         integral = intergral_by_Gauss(lambda y: f(cur_x, y), ax, bx, n_gauss)
         integrals.append(integral)
-        xs.append(cur_x)
-        dataset.append([cur_x,integral])
-
-    #int_table.fit(dataset, n - 1, xs)
-    #f_y = int_table.neuton_interpolation(n - 1)
-    #su = integral_by_Simpson(f_y, ay, by, n_simpson)
-
 
     return integral_by_Simpson(integrals,ay,by,n_simpson)
 
@@ -228,7 +220,7 @@ if __name__ == '__main__':
     # Table[0] = Table[0][~np.isnan(Table)]
     # Table_df= np.log(Table_df.loc[:, Table_df.columns != "y\\x"])
     # print(Table,Table.shape)
-    #Table[1:, 1:] = np.log(Table[1:, 1:])
+    Table[1:, 1:] = np.log(Table[1:, 1:])
 
     # print(Table)
 
@@ -238,20 +230,29 @@ if __name__ == '__main__':
     # print(plane.get_plane_value(Table[0][1],Table[1][0]))
     # print(plane.get_plane_value(Table[0][3], Table[2][0]),Table[3,2])
     # findMultidimensionalInterpolation()
-    xx, yy = np.meshgrid(Table[1:, :], Table[:, 1:])
+    '''xx, yy = np.meshgrid(Table[1:, :], Table[:, 1:])
     print(xx, yy)
     z = Table[1:, 1:]
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
     X, Y = np.meshgrid(Table[1:, 0], Table[0, 1:])
     ax.plot_surface(X, Y, Table[1:, 1:])
-    plt.show()
+    plt.show()'''
     plane = Plane(Table)
     multidim = MultiDim()
     multidim.fit(Table[1:,1:],Table[1:,0], Table[0, 1:],None)
     #x_val = multidim.MultidimensionalInterpolationNeuton(10,10,2,1)
-    f = lambda x,y: multidim.MultidimensionalInterpolationNeuton(10,10,x,y)
-    print(get_integral(f,0,1,0,1,10,10,10))
+    f = lambda x,y: multidim.MultidimensionalInterpolationNeuton(12,12,x,y)
+    #f = lambda x,y: plane.get_plane_value(x,y)
+    print(np.exp(get_integral(f,0,1,0,1,15,15,15)))
+
+    #x = [i for i in range(100)]
+    #y = [i for i in range(100)]
+
+
+
+
+
     #print(f(0,0))
     #print(np.exp(get_integral(plane.get_plane_value, ax=0,bx=2,ay=0,by=2,n=10,n_simpson=10,n_gauss=10)))
     # print(np.exp(plane.get_plane_value(0.5,0.1)))
