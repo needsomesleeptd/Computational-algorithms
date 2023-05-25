@@ -228,7 +228,7 @@ if __name__ == '__main__':
     # Table[0] = Table[0][~np.isnan(Table)]
     # Table_df= np.log(Table_df.loc[:, Table_df.columns != "y\\x"])
     # print(Table,Table.shape)
-    Table[1:, 1:] = np.log(Table[1:, 1:])
+    #Table[1:, 1:] = np.log(Table[1:, 1:])
 
     # print(Table)
 
@@ -249,9 +249,10 @@ if __name__ == '__main__':
     plane = Plane(Table)
     multidim = MultiDim()
     multidim.fit(Table[1:,1:],Table[1:,0], Table[0, 1:],None)
-    x_val = multidim.MultidimensionalInterpolationNeuton(3,3,2,1)
-    f = lambda x,y: multidim.MultidimensionalInterpolationNeuton(3,3,x,y)
+    #x_val = multidim.MultidimensionalInterpolationNeuton(10,10,2,1)
+    f = lambda x,y: multidim.MultidimensionalInterpolationNeuton(10,10,x,y)
     print(get_integral(f,0,1,0,1,10,10,10))
+    #print(f(0,0))
     #print(np.exp(get_integral(plane.get_plane_value, ax=0,bx=2,ay=0,by=2,n=10,n_simpson=10,n_gauss=10)))
     # print(np.exp(plane.get_plane_value(0.5,0.1)))
     # Some tests to find that everything is working
