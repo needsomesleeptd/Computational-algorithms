@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from MultiDimensional import *
 from InterpolationTable import *
-
+import prettytable as pt
 
 def make_identity(matrix):
     # перебор строк в обратном порядке
@@ -167,6 +167,7 @@ def integral_by_Simpson(f, a, b, n):
         x += 2 * h
     return (h / 3) * (f(a) + f(b) + k)
 
+
 '''def get_multiple_integral(Table,a,b,n,n_gauss,n_simpson):
     intergrals_x = []
     h = (b - a) / n
@@ -216,12 +217,12 @@ def get_integral(f, ax, bx, ay, by, n, n_gauss, n_simpson):
         integral = intergral_by_Gauss(lambda y: f(cur_x, y), ax, bx, n_gauss)
         integrals.append(integral)
         xs.append(cur_x)
-        inter_table_data.append([cur_x,integral])
+        inter_table_data.append([cur_x, integral])
 
     inter_table = InterpolationTable()
-    inter_table.fit(inter_table_data,n - 1,2)
+    inter_table.fit(inter_table_data, n - 1, 2)
     new_func = inter_table.neuton_interpolation((by + ay) / 2)
-    return integral_by_Simpson(new_func,ay,by,n_simpson)
+    return integral_by_Simpson(new_func, ay, by, n_simpson)
 
 
 if __name__ == '__main__':
@@ -250,22 +251,98 @@ if __name__ == '__main__':
 
     plane = Plane(Table)
     multidim = MultiDim()
-    multidim.fit(Table[1:,1:],Table[1:,0], Table[0, 1:],None)
-    #x_val = multidim.MultidimensionalInterpolationNeuton(10,10,2,1)
-    #f = lambda x,y: multidim.MultidimensionalInterpolationNeuton(10,10,x,y)
-    f = lambda x,y: plane.get_plane_value(x,y)
-    #f = lambda x,y: x*x +y*y
-    print(np.exp(get_integral(f,0,1,0,1,10,10,10)))
-
-    #x = [i for i in range(100)]
-    #y = [i for i in range(100)]
+    multidim.fit(Table[1:, 1:], Table[1:, 0], Table[0, 1:], None)
+    # x_val = multidim.MultidimensionalInterpolationNeuton(10,10,2,1)
+    # f = lambda x,y: multidim.MultidimensionalInterpolationNeuton(10,10,x,y)
+    f = lambda x, y: plane.get_plane_value(x, y)
+    # f = lambda x,y: x*x +y*y
+    print(np.exp(get_integral(f, 0, 1, 0, 1, 10, 10, 10)))
 
 
+    # x = [i for i in range(100)]
+    # y = [i for i in range(100)]
+
+    # Second task
+    ROUND_CNT = 3
+    def left_derivative(ind, ys, h):
+        if (ind - h < 0):
+            return '*'
+        else:
+            return round((ys[ind] - ys[ind - h]) / h,ROUND_CNT)
+
+
+    def center_derivative(ind, ys, h):
+        if (ind - h < 0 or ind + h >= len(ys)):
+            return '*'
+        else:
+            return round((ys[ind + h] - ys[ind - h]) / (2 * h),ROUND_CNT)
+
+
+    def second_runge(ind, ys, h):
+        if ind + 2 >= len(ys):
+            return '*'
+
+        f1 = (ys[ind + 1] - ys[ind]) / (h)
+        f2 = (ys[ind + 2] - ys[ind]) / (2 * h)
+
+        val = (2 * f1 - f2)
+        return round(val,ROUND_CNT)
+
+
+    def align_variables(ind, xs, ys):
+        if (ind + 1 >= len(ys)):
+            return '*'
+        ns = 1 / ys
+        epss = 1 / xs
+        #der_ns = (ns[ind] - ns[ind - 1]) / (epss[ind] - epss[ind - 1]) left_one
+        der_ns = (ns[ind + 1] - ns[ind]) / (epss[ind + 1] - epss[ind])
+        return  round(der_ns * ((-1 / (xs[ind] ** 2)) / (-1 / (ys[ind] ** 2))),ROUND_CNT)
+
+    def second_diff(ind,ys,h):
+        if (ind - h < 0 or ind + h >= len(ys)):
+            return '*'
+        else:
+            #left_der = left_derivative(ind,ys,h)
+            #right_der = left_derivative(ind,ys,-h)
+            return round((ys[ind - 1] - 2 * ys[ind] + ys[ind + 1]) / h ** 2,ROUND_CNT)
 
 
 
-    #print(f(0,0))
-    #print(np.exp(get_integral(plane.get_plane_value, ax=0,bx=2,ay=0,by=2,n=10,n_simpson=10,n_gauss=10)))
+    xs = np.array([i for i in range(1, 7)], dtype=np.float64)
+    ys = np.array([
+        0.571,
+        0.889,
+        1.091,
+        1.231,
+        1.333,
+        1.412,
+    ], dtype=np.float64)
+
+
+    table = pt.PrettyTable()
+    filedNames = ["X", "Y", "1", "2", "3", "4", "5"]
+
+    methods = [left_derivative, center_derivative,
+               second_runge, align_variables,
+               second_diff]
+    table.add_column(filedNames[0], xs)
+    table.add_column(filedNames[1], ys)
+    N = 6
+
+    #h = (xs[-1] - xs[0]) / len(xs)
+
+    for i in range(len(methods)):
+        if i == 3:
+            table.add_column(filedNames[i + 2], [methods[i](j, xs, ys) for j in range(N)])
+        else:
+            table.add_column(filedNames[i + 2], [methods[i](j, ys, 1) for j in range(N)])
+
+    print(table)
+
+
+
+    # print(f(0,0))
+    # print(np.exp(get_integral(plane.get_plane_value, ax=0,bx=2,ay=0,by=2,n=10,n_simpson=10,n_gauss=10)))
     # print(np.exp(plane.get_plane_value(0.5,0.1)))
     # Some tests to find that everything is working
     # func = lambda x: x ** 2 + x ** 3 / 4 + cos(x) + sin(x)
